@@ -48,7 +48,8 @@ app.use((req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`Server đang chạy trên port ${PORT}`);
-  console.log(`URL: ${BASE_URL}`);
+  console.log(`BASE_URL: ${BASE_URL}`);
+  console.log(`RAILWAY_PUBLIC_DOMAIN: ${process.env.RAILWAY_PUBLIC_DOMAIN || 'không có'}`);
   if (RAILWAY_URL) {
     console.log('✅ Phát hiện Railway deployment - URL cố định');
   }
