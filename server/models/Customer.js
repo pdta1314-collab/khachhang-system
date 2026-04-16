@@ -1,10 +1,10 @@
 const db = require('../config/database');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 
 class Customer {
   static create(name, outfit) {
     return new Promise((resolve, reject) => {
-      const uniqueId = uuidv4();
+      const uniqueId = randomUUID();
       const sql = 'INSERT INTO customers (name, outfit, unique_id) VALUES (?, ?, ?)';
       
       db.run(sql, [name, outfit, uniqueId], function(err) {
