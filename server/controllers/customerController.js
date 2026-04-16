@@ -50,14 +50,29 @@ exports.createCustomer = async (req, res) => {
 
     const customer = await Customer.create(name, outfit);
     
-    // Tạo QR code - Ưu tiên RAILWAY_PUBLIC_DOMAIN, sau đó BASE_URL
+    // Tạo QR code - Ưu tiên RAILWAY_PUBLIC_DOMAIN
     const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
-    const baseUrl = railwayDomain 
-      ? `https://${railwayDomain}`
-      : (process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`);
-    console.log('QR Base URL:', baseUrl);
+    const envBaseUrl = process.env.BASE_URL;
+    const port = process.env.PORT || 3000;
+    
+    console.log('=== DEBUG QR URL ===');
     console.log('RAILWAY_PUBLIC_DOMAIN:', railwayDomain);
-    console.log('process.env.BASE_URL:', process.env.BASE_URL);
+    console.log('process.env.BASE_URL:', envBaseUrl);
+    console.log('process.env.PORT:', port);
+    
+    // Hardcode URL Railway nếu có domain
+    let baseUrl;
+    if (railwayDomain) {
+      baseUrl = `https://${railwayDomain}`;
+    } else if (envBaseUrl && !envBaseUrl.includes('localhost')) {
+      baseUrl = envBaseUrl;
+    } else {
+      baseUrl = `http://localhost:${port}`;
+    }
+    
+    console.log('Final baseUrl:', baseUrl);
+    console.log('===================');
+    
     const qrUrl = `${baseUrl}/video/${customer.uniqueId}`;
     const qrCode = await QRCode.toDataURL(qrUrl);
     
