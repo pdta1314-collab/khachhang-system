@@ -5,6 +5,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+// URL công khai (Railway)
+const BASE_URL = 'https://web-production-a6a88.up.railway.app';
+
 // Cấu hình multer cho upload video
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -50,28 +53,9 @@ exports.createCustomer = async (req, res) => {
 
     const customer = await Customer.create(name, outfit);
     
-    // Tạo QR code - Ưu tiên RAILWAY_PUBLIC_DOMAIN
-    const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
-    const envBaseUrl = process.env.BASE_URL;
-    const port = process.env.PORT || 3000;
-    
-    console.log('=== DEBUG QR URL ===');
-    console.log('RAILWAY_PUBLIC_DOMAIN:', railwayDomain);
-    console.log('process.env.BASE_URL:', envBaseUrl);
-    console.log('process.env.PORT:', port);
-    
-    // Hardcode URL Railway nếu có domain
-    let baseUrl;
-    if (railwayDomain) {
-      baseUrl = `https://${railwayDomain}`;
-    } else if (envBaseUrl && !envBaseUrl.includes('localhost')) {
-      baseUrl = envBaseUrl;
-    } else {
-      baseUrl = `http://localhost:${port}`;
-    }
-    
-    console.log('Final baseUrl:', baseUrl);
-    console.log('===================');
+    // Tạo QR code
+    const baseUrl = BASE_URL;
+    console.log('Using BASE_URL:', baseUrl);
     
     const qrUrl = `${baseUrl}/video/${customer.uniqueId}`;
     const qrCode = await QRCode.toDataURL(qrUrl);
@@ -103,7 +87,7 @@ exports.getCustomer = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const baseUrl = BASE_URL;
     const videoUrl = customer.video_path ? `${baseUrl}/uploads/${path.basename(customer.video_path)}` : null;
 
     res.json({
@@ -134,7 +118,7 @@ exports.getCustomerByUniqueId = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const baseUrl = BASE_URL;
     const videoUrl = customer.video_path ? `${baseUrl}/uploads/${path.basename(customer.video_path)}` : null;
 
     res.json({
@@ -160,7 +144,7 @@ exports.getAllCustomers = async (req, res) => {
   try {
     const customers = await Customer.getAll();
     
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const baseUrl = BASE_URL;
     const customersWithUrls = customers.map(c => ({
       ...c,
       videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null
@@ -319,7 +303,7 @@ exports.getImages = async (req, res) => {
     const { id } = req.params;
     const images = await CustomerImage.getByCustomerId(id);
     
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const baseUrl = BASE_URL;
     const imagesWithUrls = images.map(img => ({
       id: img.id,
       url: `${baseUrl}/uploads/images/${path.basename(img.image_path)}`,
