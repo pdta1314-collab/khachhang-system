@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Database
+database.db
+*.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Uploads (sẽ được lưu trên Railway volume)
+server/uploads/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Build files
+client/build/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
