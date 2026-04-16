@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
@@ -128,8 +129,13 @@ function CustomerForm() {
               </p>
             </div>
 
-            <div className="qr-code">
-              <img src={customerData?.qrCode} alt="QR Code" />
+            <div className="qr-code" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+              <QRCodeSVG 
+                value={customerData?.downloadUrl || ''} 
+                size={200}
+                level="H"
+                includeMargin={true}
+              />
             </div>
 
             <div style={{ marginTop: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
