@@ -1,7 +1,10 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.join(__dirname, '../../database.db');
+// Lưu database vào /data (Railway volume) hoặc local nếu không có
+const dbPath = process.env.RAILWAY_VOLUME_MOUNT_PATH 
+  ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'database.db')
+  : path.join(__dirname, '../../database.db');
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
