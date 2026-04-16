@@ -52,6 +52,8 @@ exports.createCustomer = async (req, res) => {
     
     // Tạo QR code
     const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    console.log('BASE_URL used for QR:', baseUrl);
+    console.log('process.env.BASE_URL:', process.env.BASE_URL);
     const qrUrl = `${baseUrl}/video/${customer.uniqueId}`;
     const qrCode = await QRCode.toDataURL(qrUrl);
     
