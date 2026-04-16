@@ -30,7 +30,14 @@ function CustomerForm() {
 
       if (response.data.success) {
         setSuccess(true);
-        setCustomerData(response.data);
+        // Tự động tạo QR URL từ window.location thay vì dùng từ backend
+        const baseUrl = window.location.origin;
+        const qrUrl = `${baseUrl}/video/${response.data.customer.uniqueId}`;
+        setCustomerData({
+          ...response.data,
+          qrCode: response.data.qrCode, // Dùng QR từ backend
+          downloadUrl: qrUrl // Override URL với URL hiện tại
+        });
         setName('');
         setOutfit('');
       }
