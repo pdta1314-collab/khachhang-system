@@ -50,9 +50,13 @@ exports.createCustomer = async (req, res) => {
 
     const customer = await Customer.create(name, outfit);
     
-    // Tạo QR code
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
-    console.log('BASE_URL used for QR:', baseUrl);
+    // Tạo QR code - Ưu tiên RAILWAY_PUBLIC_DOMAIN, sau đó BASE_URL
+    const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
+    const baseUrl = railwayDomain 
+      ? `https://${railwayDomain}`
+      : (process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`);
+    console.log('QR Base URL:', baseUrl);
+    console.log('RAILWAY_PUBLIC_DOMAIN:', railwayDomain);
     console.log('process.env.BASE_URL:', process.env.BASE_URL);
     const qrUrl = `${baseUrl}/video/${customer.uniqueId}`;
     const qrCode = await QRCode.toDataURL(qrUrl);
