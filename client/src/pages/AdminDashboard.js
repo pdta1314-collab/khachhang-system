@@ -441,30 +441,32 @@ function AdminDashboard() {
 
   return (
     <div className="container" style={{ paddingTop: '20px', paddingBottom: '40px' }}>
-      <div className="admin-header">
+      <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1 className="admin-title">Quản lý Khách hàng</h1>
           <p style={{ color: '#666', marginTop: '4px' }}>
             Xin chào, <strong>{adminUser?.username}</strong>
           </p>
-        </div>
-        <div className="admin-nav">
-          <button onClick={exportToCSV} className="btn btn-primary">
-            Xuất CSV
-          </button>
-          <input
-            type="text"
-            placeholder="Đường dẫn thư mục video (ví dụ: /uploads/videos)"
-            value={videoFolderPath}
-            onChange={(e) => setVideoFolderPath(e.target.value)}
-            style={{ padding: '10px', width: '300px' }}
-          />
-          <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos || !videoFolderPath.trim()} className="btn btn-primary">
-            {uploadingBatchVideos ? 'Đang upload...' : 'Upload từ thư mục'}
-          </button>
-          <button onClick={() => navigate('/')} className="btn btn-secondary">
+          <button onClick={() => navigate('/')} className="btn btn-secondary" style={{ marginTop: '10px' }}>
             ↩ Quay lại đăng ký
           </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+          <div className="admin-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button onClick={exportToCSV} className="btn btn-primary">
+              Xuất CSV
+            </button>
+            <input
+              type="text"
+              placeholder="Đường dẫn thư mục video (ví dụ: /uploads/videos)"
+              value={videoFolderPath}
+              onChange={(e) => setVideoFolderPath(e.target.value)}
+              style={{ padding: '10px', width: '300px' }}
+            />
+            <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos || !videoFolderPath.trim()} className="btn btn-primary">
+              {uploadingBatchVideos ? 'Đang upload...' : 'Upload từ thư mục'}
+            </button>
+          </div>
           <button onClick={handleLogout} className="btn btn-secondary">
             Đăng xuất
           </button>
