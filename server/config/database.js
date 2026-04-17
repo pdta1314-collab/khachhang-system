@@ -5,17 +5,15 @@ const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000
 });
 
-pool.on('connect', () => {
-  console.log('Đã kết nối thành công đến PostgreSQL database');
-  initializeDatabase();
-});
-
-pool.on('error', (err) => {
-  console.error('Lỗi kết nối database:', err.message);
-});
+// Retry logic cho database connection
+let isInitialized = false;
+let initRetries = 0;
+const MAX_RETRIES = 5;
 
 async function initializeDatabase() {
   try {
@@ -57,8 +55,16 @@ async function initializeDatabase() {
 
     // Tạo admin mặc định nếu chưa có
     await createDefaultAdmin();
+    isInitialized = true;
   } catch (err) {
     console.error('Lỗi khởi tạo database:', err.message);
+    if (initRetries < MAX_RETRIES) {
+      initRetries++;
+      console.log(`Retry ${initRetries}/${MAX_RETRIES} trong 5 giây...`);
+      setTimeout(initializeDatabase, 5000);
+    } else {
+      console.error('Không thể khởi tạo database sau nhiều lần thử');
+    }
   }
 }
 
@@ -76,5 +82,32 @@ async function createDefaultAdmin() {
     console.error('Lỗi tạo admin mặc định:', err.message);
   }
 }
+
+// Test connection và khởi tạo database
+async function testConnection() {
+  try {
+    await pool.query('SELECT NOW()');
+    console.log('Đã kết nối thành công đến PostgreSQL database');
+    if (!isInitialized) {
+      initializeDatabase();
+    }
+  } catch (err) {
+    console.error('Lỗi kết nối database:', err.message);
+    if (initRetries < MAX_RETRIES) {
+      initRetries++;
+      console.log(`Retry ${initRetries}/${MAX_RETRIES} trong 5 giây...`);
+      setTimeout(testConnection, 5000);
+    } else {
+      console.error('Không thể kết nối database sau nhiều lần thử');
+    }
+  }
+}
+
+pool.on('error', (err) => {
+  console.error('Lỗi kết nối database:', err.message);
+});
+
+// Bắt đầu test connection
+testConnection();
 
 module.exports = pool;
