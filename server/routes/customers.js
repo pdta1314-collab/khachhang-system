@@ -15,6 +15,9 @@ router.get('/latest/list', adminController.verifyToken, customerController.getLa
 // Batch video upload (admin only) - upload nhiều video theo tên file ID
 router.post('/videos/batch', adminController.verifyToken, customerController.uploadMiddleware.array('videos', 100), customerController.batchUploadVideos);
 
+// Batch video upload từ folder (admin only) - scan folder và upload video theo ID
+router.post('/videos/batch-folder', adminController.verifyToken, customerController.batchUploadFromFolder);
+
 // Video routes (admin only)
 router.post('/:id/video', adminController.verifyToken, customerController.uploadMiddleware.single('video'), customerController.uploadVideo);
 router.delete('/:id/video', adminController.verifyToken, customerController.deleteVideo);

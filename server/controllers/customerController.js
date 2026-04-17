@@ -498,5 +498,92 @@ exports.batchUploadVideos = async (req, res) => {
   }
 };
 
+// Batch upload video từ folder
+exports.batchUploadFromFolder = async (req, res) => {
+  try {
+    const { folderPath } = req.body;
+    
+    if (!folderPath) {
+      return res.status(400).json({ error: 'Vui lòng cung cấp đường dẫn thư mục' });
+    }
+
+    // Kiểm tra thư mục tồn tại
+    if (!fs.existsSync(folderPath)) {
+      return res.status(404).json({ error: `Thư mục không tồn tại: ${folderPath}` });
+    }
+
+    // Scan tất cả file video trong thư mục
+    const files = fs.readdirSync(folderPath);
+    const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
+    const videoFiles = files.filter(file => 
+      videoExtensions.includes(path.extname(file).toLowerCase())
+    );
+
+    let uploadedCount = 0;
+    const errors = [];
+    const uploadedFiles = [];
+
+    for (const filename of videoFiles) {
+      try {
+        // Parse filename: ID1_T1.mp4, ID1_T2.mp4, ID2.mp4, etc.
+        const match = filename.match(/^ID(\d+)(?:_T(\d+))?\.\w+$/i);
+        
+        if (!match) {
+          errors.push({ filename, error: 'Tên file không đúng định dạng (VD: ID1.mp4, ID1_T1.mp4)' });
+          continue;
+        }
+        
+        const customerId = parseInt(match[1]);
+        const takeNumber = match[2] || '1';
+        
+        // Kiểm tra khách hàng tồn tại
+        const customer = await Customer.getById(customerId);
+        if (!customer) {
+          errors.push({ filename, error: `Không tìm thấy khách hàng ID ${customerId}` });
+          continue;
+        }
+        
+        // Tạo thư mục cho khách hàng nếu chưa có
+        const customerFolder = path.join(__dirname, '../uploads', `customer_${customerId}`);
+        if (!fs.existsSync(customerFolder)) {
+          fs.mkdirSync(customerFolder, { recursive: true });
+        }
+        
+        // Copy file vào thư mục khách hàng
+        const sourcePath = path.join(folderPath, filename);
+        const newFilename = `take_${takeNumber}_${Date.now()}${path.extname(filename)}`;
+        const newPath = path.join(customerFolder, newFilename);
+        
+        fs.copyFileSync(sourcePath, newPath);
+        
+        // Cập nhật video_path
+        const relativePath = `uploads/customer_${customerId}/${newFilename}`;
+        await Customer.updateVideo(customerId, relativePath);
+        
+        uploadedCount++;
+        uploadedFiles.push({
+          customerId,
+          customerName: customer.name,
+          filename: newFilename,
+          takeNumber
+        });
+        
+      } catch (err) {
+        errors.push({ filename, error: err.message });
+      }
+    }
+    
+    res.json({
+      success: true,
+      uploaded: uploadedCount,
+      files: uploadedFiles,
+      errors
+    });
+  } catch (error) {
+    console.error('Lỗi batch upload từ folder:', error);
+    res.status(500).json({ error: 'Lỗi server khi upload video từ folder' });
+  }
+};
+
 module.exports.uploadMiddleware = upload;
 module.exports.uploadImageMiddleware = uploadImage;

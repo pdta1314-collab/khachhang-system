@@ -39,7 +39,7 @@ function AdminDashboard() {
   const [deleting, setDeleting] = useState(false);
 
   // Batch video upload states
-  const [batchVideoFiles, setBatchVideoFiles] = useState([]);
+  const [videoFolderPath, setVideoFolderPath] = useState('');
   const [uploadingBatchVideos, setUploadingBatchVideos] = useState(false);
 
   // Pagination states
@@ -313,25 +313,18 @@ function AdminDashboard() {
   };
 
   const handleBatchVideoUpload = async () => {
-    if (batchVideoFiles.length === 0) {
-      setError('Vui lòng chọn file video');
+    if (!videoFolderPath.trim()) {
+      setError('Vui lòng nhập đường dẫn thư mục video');
       return;
     }
 
     const token = localStorage.getItem('adminToken');
-    const formData = new FormData();
-    
-    batchVideoFiles.forEach(file => {
-      formData.append('videos', file);
-    });
-
     setUploadingBatchVideos(true);
     try {
-      const response = await axios.post(`${API_URL}/customers/videos/batch`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+      const response = await axios.post(`${API_URL}/customers/videos/batch-folder`, {
+        folderPath: videoFolderPath.trim()
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.data.success) {
@@ -339,7 +332,7 @@ function AdminDashboard() {
         if (response.data.errors && response.data.errors.length > 0) {
           alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
         }
-        setBatchVideoFiles([]);
+        setVideoFolderPath('');
         fetchCustomers(token);
       }
     } catch (err) {
@@ -459,21 +452,16 @@ function AdminDashboard() {
           <button onClick={exportToCSV} className="btn btn-primary">
             Xuất CSV
           </button>
-          <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <span>📁 Chọn video (đặt tên theo ID)</span>
-            <input
-              type="file"
-              multiple
-              accept="video/*"
-              onChange={(e) => setBatchVideoFiles(Array.from(e.target.files))}
-              style={{ display: 'none' }}
-            />
-          </label>
-          {batchVideoFiles.length > 0 && (
-            <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos} className="btn btn-primary">
-              {uploadingBatchVideos ? 'Đang upload...' : `Upload ${batchVideoFiles.length} video`}
-            </button>
-          )}
+          <input
+            type="text"
+            placeholder="Đường dẫn thư mục video (ví dụ: /uploads/videos)"
+            value={videoFolderPath}
+            onChange={(e) => setVideoFolderPath(e.target.value)}
+            style={{ padding: '10px', width: '300px' }}
+          />
+          <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos || !videoFolderPath.trim()} className="btn btn-primary">
+            {uploadingBatchVideos ? 'Đang upload...' : 'Upload từ thư mục'}
+          </button>
           <button onClick={() => navigate('/')} className="btn btn-secondary">
             ↩ Quay lại đăng ký
           </button>
