@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
+    "start": "npm run build && node server/server.js",
     "start:ngrok": "node start-ngrok.js",
     "dev": "node server/server.js",
     "build": "cd client && npm install && npm run build",
