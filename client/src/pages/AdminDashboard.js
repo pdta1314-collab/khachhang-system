@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
 
 const API_URL = '/api';
 
@@ -14,6 +15,18 @@ function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [adminUser, setAdminUser] = useState(null);
+  
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState('');
+  const [videoFilter, setVideoFilter] = useState(''); // 'has', 'no', ''
+  const [imageFilter, setImageFilter] = useState(''); // 'has', 'no', ''
+  
+  // Auto-refresh
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  
+  // View modal states
+  const [viewCustomer, setViewCustomer] = useState(null);
   
   // Image management states
   const [selectedCustomerForImages, setSelectedCustomerForImages] = useState(null);
@@ -35,7 +48,19 @@ function AdminDashboard() {
     }
 
     fetchCustomers(token);
-  }, [navigate]);
+    
+    // Auto-refresh mỗi 5 giây
+    let interval;
+    if (autoRefresh) {
+      interval = setInterval(() => {
+        fetchLatestCustomers(token);
+      }, 5000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [navigate, autoRefresh]);
 
   const fetchCustomers = async (token) => {
     try {
@@ -45,6 +70,7 @@ function AdminDashboard() {
 
       if (response.data.success) {
         setCustomers(response.data.customers);
+        setLastUpdate(new Date());
       }
     } catch (err) {
       if (err.response?.status === 401) {
@@ -59,10 +85,60 @@ function AdminDashboard() {
     }
   };
 
+  // Fetch chỉ khách hàng mới (cho auto-refresh)
+  const fetchLatestCustomers = async (token) => {
+    try {
+      const since = lastUpdate ? lastUpdate.toISOString() : null;
+      const response = await axios.get(`${API_URL}/customers/latest/list${since ? `?since=${since}` : ''}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success && response.data.customers.length > 0) {
+        // Cập nhật danh sách - thêm khách mới và cập nhật status
+        const newCustomers = response.data.customers;
+        setCustomers(prev => {
+          const existingIds = prev.map(c => c.id);
+          const updated = [...prev];
+          
+          newCustomers.forEach(newCust => {
+            const idx = existingIds.indexOf(newCust.id);
+            if (idx >= 0) {
+              // Cập nhật khách cũ
+              updated[idx] = { ...updated[idx], ...newCust };
+            } else {
+              // Thêm khách mới
+              updated.unshift(newCust);
+            }
+          });
+          
+          return updated;
+        });
+        setLastUpdate(new Date());
+      }
+    } catch (err) {
+      // Không hiển thị lỗi cho auto-refresh
+      console.log('Auto-refresh error:', err);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
     navigate('/login');
+  };
+
+  // Lấy style cho row theo trạng thái
+  const getRowStyle = (status) => {
+    switch (status) {
+      case 'Đang chụp':
+        return { backgroundColor: '#ffebee', fontWeight: 'bold' }; // Đỏ nhạt
+      case 'Đang chờ':
+        return { backgroundColor: '#e3f2fd', fontWeight: 'bold' }; // Xanh nhạt
+      case 'Đã chụp xong':
+        return { backgroundColor: '#f5f5f5' }; // Xám nhạt
+      default:
+        return {};
+    }
   };
 
   const handleDelete = async (id) => {
@@ -268,15 +344,52 @@ function AdminDashboard() {
         </div>
       )}
 
+      {/* Filters */}
       <div className="card" style={{ marginBottom: '20px' }}>
-        <div className="form-group" style={{ marginBottom: '0' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên hoặc trang phục..."
+            placeholder="Tìm kiếm theo tên..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ marginBottom: '0' }}
+            style={{ marginBottom: '0', flex: '1', minWidth: '200px' }}
           />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ marginBottom: '0', padding: '10px' }}
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value="Đang chụp">Đang chụp</option>
+            <option value="Đang chờ">Đang chờ</option>
+            <option value="Đã chụp xong">Đã chụp xong</option>
+          </select>
+          <select
+            value={videoFilter}
+            onChange={(e) => setVideoFilter(e.target.value)}
+            style={{ marginBottom: '0', padding: '10px' }}
+          >
+            <option value="">Tất cả video</option>
+            <option value="has">Đã có video</option>
+            <option value="no">Chưa có video</option>
+          </select>
+          <select
+            value={imageFilter}
+            onChange={(e) => setImageFilter(e.target.value)}
+            style={{ marginBottom: '0', padding: '10px' }}
+          >
+            <option value="">Tất cả ảnh</option>
+            <option value="has">Đã có ảnh</option>
+            <option value="no">Chưa có ảnh</option>
+          </select>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+            />
+            Tự động cập nhật
+          </label>
         </div>
       </div>
 
@@ -286,8 +399,9 @@ function AdminDashboard() {
             <tr>
               <th>ID</th>
               <th>Họ tên</th>
-              <th>Trang phục</th>
-              <th>Ngày đăng ký</th>
+              <th>Số điện thoại</th>
+              <th>Trạng thái</th>
+              <th>Giờ đăng ký</th>
               <th>Ảnh</th>
               <th>Video</th>
               <th>Thao tác</th>
@@ -295,11 +409,23 @@ function AdminDashboard() {
           </thead>
           <tbody>
             {filteredCustomers.map(customer => (
-              <tr key={customer.id}>
-                <td>{customer.id}</td>
+              <tr key={customer.id} style={getRowStyle(customer.status)}>
+                <td style={{ fontWeight: 'bold', fontSize: '16px' }}>{customer.id}</td>
                 <td>{customer.name}</td>
-                <td>{customer.outfit}</td>
-                <td>{new Date(customer.created_at).toLocaleDateString('vi-VN')}</td>
+                <td>{customer.phone}</td>
+                <td>
+                  <span style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    backgroundColor: customer.status === 'Đang chụp' ? '#ef5350' : customer.status === 'Đang chờ' ? '#42a5f5' : '#9e9e9e',
+                    color: 'white'
+                  }}>
+                    {customer.status}
+                  </span>
+                </td>
+                <td>{customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}</td>
                 <td>
                   <span className={`status-badge ${customer.image_count > 0 ? 'status-success' : 'status-pending'}`}>
                     {customer.image_count || 0} ảnh
@@ -313,38 +439,28 @@ function AdminDashboard() {
                 <td>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button 
+                      onClick={() => setViewCustomer(customer)}
+                      className="btn btn-secondary"
+                      style={{ padding: '8px 16px', fontSize: '14px' }}
+                    >
+                      Xem
+                    </button>
+                    <button 
                       onClick={() => handleOpenImageModal(customer)}
                       className="btn btn-secondary"
                       style={{ padding: '8px 16px', fontSize: '14px' }}
                     >
-                      Quản lý ảnh
+                      Ảnh
                     </button>
-                    <button 
-                      onClick={() => setSelectedCustomer(customer)}
-                      className="btn btn-primary"
-                      style={{ padding: '8px 16px', fontSize: '14px' }}
-                    >
-                      {customer.video_path ? 'Thay video' : 'Upload video'}
-                    </button>
-                    
-                    {customer.video_path && (
-                      <button 
-                        onClick={() => handleDeleteVideo(customer.id)}
-                        className="btn btn-secondary"
-                        style={{ padding: '8px 16px', fontSize: '14px' }}
-                      >
-                        Xóa video
-                      </button>
-                    )}
                     
                     <a 
-                      href={`/video/${customer.unique_id}`}
+                      href={`/video/${customer.uniqueId}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-secondary"
                       style={{ padding: '8px 16px', fontSize: '14px', textDecoration: 'none', display: 'inline-block' }}
                     >
-                      Xem
+                      Link
                     </a>
 
                     <button 
