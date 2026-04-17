@@ -39,7 +39,7 @@ function AdminDashboard() {
   const [deleting, setDeleting] = useState(false);
 
   // Batch video upload states
-  const [videoFolderPath, setVideoFolderPath] = useState('');
+  const [videoFolderFiles, setVideoFolderFiles] = useState([]);
   const [uploadingBatchVideos, setUploadingBatchVideos] = useState(false);
 
   // Pagination states
@@ -313,18 +313,25 @@ function AdminDashboard() {
   };
 
   const handleBatchVideoUpload = async () => {
-    if (!videoFolderPath.trim()) {
-      setError('Vui lòng nhập đường dẫn thư mục video');
+    if (videoFolderFiles.length === 0) {
+      setError('Vui lòng chọn thư mục video');
       return;
     }
 
     const token = localStorage.getItem('adminToken');
+    const formData = new FormData();
+    
+    videoFolderFiles.forEach(file => {
+      formData.append('videos', file);
+    });
+
     setUploadingBatchVideos(true);
     try {
-      const response = await axios.post(`${API_URL}/customers/videos/batch-folder`, {
-        folderPath: videoFolderPath.trim()
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axios.post(`${API_URL}/customers/videos/batch`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
       if (response.data.success) {
@@ -332,7 +339,7 @@ function AdminDashboard() {
         if (response.data.errors && response.data.errors.length > 0) {
           alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
         }
-        setVideoFolderPath('');
+        setVideoFolderFiles([]);
         fetchCustomers(token);
       }
     } catch (err) {
@@ -441,35 +448,48 @@ function AdminDashboard() {
 
   return (
     <div className="container" style={{ paddingTop: '20px', paddingBottom: '40px' }}>
-      <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      {/* Nút Quay lại đăng ký - góc trái */}
+      <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000 }}>
+        <button onClick={() => navigate('/')} className="btn btn-secondary">
+          ↩ Quay lại đăng ký
+        </button>
+      </div>
+
+      {/* Nút Đăng xuất - góc phải */}
+      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+        <button onClick={handleLogout} className="btn btn-secondary">
+          Đăng xuất
+        </button>
+      </div>
+
+      <div className="admin-header">
         <div>
           <h1 className="admin-title">Quản lý Khách hàng</h1>
           <p style={{ color: '#666', marginTop: '4px' }}>
             Xin chào, <strong>{adminUser?.username}</strong>
           </p>
-          <button onClick={() => navigate('/')} className="btn btn-secondary" style={{ marginTop: '10px' }}>
-            ↩ Quay lại đăng ký
-          </button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-          <div className="admin-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button onClick={exportToCSV} className="btn btn-primary">
-              Xuất CSV
-            </button>
-            <input
-              type="text"
-              placeholder="Đường dẫn thư mục video (ví dụ: /uploads/videos)"
-              value={videoFolderPath}
-              onChange={(e) => setVideoFolderPath(e.target.value)}
-              style={{ padding: '10px', width: '300px' }}
-            />
-            <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos || !videoFolderPath.trim()} className="btn btn-primary">
-              {uploadingBatchVideos ? 'Đang upload...' : 'Upload từ thư mục'}
-            </button>
-          </div>
-          <button onClick={handleLogout} className="btn btn-secondary">
-            Đăng xuất
+        <div className="admin-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button onClick={exportToCSV} className="btn btn-primary">
+            Xuất CSV
           </button>
+          <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span>📁 Chọn thư mục</span>
+            <input
+              type="file"
+              multiple
+              webkitdirectory
+              directory
+              accept="video/*"
+              onChange={(e) => setVideoFolderFiles(Array.from(e.target.files))}
+              style={{ display: 'none' }}
+            />
+          </label>
+          {videoFolderFiles.length > 0 && (
+            <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos} className="btn btn-primary">
+              {uploadingBatchVideos ? 'Đang upload...' : `Upload ${videoFolderFiles.length} video`}
+            </button>
+          )}
         </div>
       </div>
 
