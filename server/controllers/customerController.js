@@ -259,6 +259,19 @@ exports.deleteCustomer = async (req, res) => {
 
     await Customer.delete(id);
 
+    // Reset sequence để gapless ID
+    const pool = require('../config/database');
+    try {
+      await pool.query(`
+        SELECT setval('customers_id_seq', 
+          COALESCE((SELECT MAX(id) FROM customers), 0) + 1, 
+          false
+        )
+      `);
+    } catch (seqErr) {
+      console.log('Reset sequence info:', seqErr.message);
+    }
+
     res.json({
       success: true,
       message: 'Đã xóa khách hàng thành công'

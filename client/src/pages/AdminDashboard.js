@@ -34,6 +34,14 @@ function AdminDashboard() {
   const [imageFiles, setImageFiles] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
 
+  // Multi-select delete states
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [deleting, setDeleting] = useState(false);
+
+  // Batch video upload states
+  const [batchVideoFiles, setBatchVideoFiles] = useState([]);
+  const [uploadingBatchVideos, setUploadingBatchVideos] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     const userStr = localStorage.getItem('adminUser');
@@ -53,7 +61,7 @@ function AdminDashboard() {
     let interval;
     if (autoRefresh) {
       interval = setInterval(() => {
-        fetchLatestCustomers(token);
+        fetchCustomers(token);
       }, 5000);
     }
     
@@ -249,6 +257,94 @@ function AdminDashboard() {
     }
   };
 
+  const handleDeleteCustomer = async (id) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) {
+      return;
+    }
+
+    const token = localStorage.getItem('adminToken');
+    try {
+      await axios.delete(`${API_URL}/customers/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchCustomers(token);
+      setError(null);
+    } catch (err) {
+      setError('Không thể xóa khách hàng');
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa ${selectedIds.length} khách hàng đã chọn?`)) {
+      return;
+    }
+
+    const token = localStorage.getItem('adminToken');
+    setDeleting(true);
+    
+    try {
+      await Promise.all(selectedIds.map(id => 
+        axios.delete(`${API_URL}/customers/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ));
+      setSelectedIds([]);
+      fetchCustomers(token);
+      setError(null);
+    } catch (err) {
+      setError('Không thể xóa khách hàng');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredCustomers.map(c => c.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleBatchVideoUpload = async () => {
+    if (batchVideoFiles.length === 0) {
+      setError('Vui lòng chọn file video');
+      return;
+    }
+
+    const token = localStorage.getItem('adminToken');
+    const formData = new FormData();
+    
+    batchVideoFiles.forEach(file => {
+      formData.append('videos', file);
+    });
+
+    setUploadingBatchVideos(true);
+    try {
+      const response = await axios.post(`${API_URL}/customers/videos/batch`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        alert(`Đã upload ${response.data.uploaded} video thành công!`);
+        if (response.data.errors && response.data.errors.length > 0) {
+          alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
+        }
+        setBatchVideoFiles([]);
+        fetchCustomers(token);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Lỗi khi upload video');
+    } finally {
+      setUploadingBatchVideos(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (!uploadFile || !selectedCustomer) {
       setError('Vui lòng chọn file video');
@@ -303,10 +399,26 @@ function AdminDashboard() {
     link.click();
   };
 
-  const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.outfit.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCustomers = customers.filter(c => {
+    // Search filter
+    const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          c.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Status filter
+    const matchesStatus = !statusFilter || c.status === statusFilter;
+    
+    // Video filter
+    const matchesVideo = !videoFilter || 
+                        (videoFilter === 'has' && c.video_path) ||
+                        (videoFilter === 'no' && !c.video_path);
+    
+    // Image filter
+    const matchesImage = !imageFilter ||
+                        (imageFilter === 'has' && c.image_count > 0) ||
+                        (imageFilter === 'no' && (!c.image_count || c.image_count === 0));
+    
+    return matchesSearch && matchesStatus && matchesVideo && matchesImage;
+  });
 
   if (loading) {
     return (
@@ -331,7 +443,22 @@ function AdminDashboard() {
           <button onClick={exportToCSV} className="btn btn-primary">
             Xuất CSV
           </button>
-          <button onClick={handleLogout} className="btn btn-danger">
+          <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <span>📁 Upload Video (theo ID)</span>
+            <input
+              type="file"
+              multiple
+              accept="video/*"
+              onChange={(e) => setBatchVideoFiles(Array.from(e.target.files))}
+              style={{ display: 'none' }}
+            />
+          </label>
+          {batchVideoFiles.length > 0 && (
+            <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos} className="btn btn-primary">
+              {uploadingBatchVideos ? 'Đang upload...' : `Upload ${batchVideoFiles.length} video`}
+            </button>
+          )}
+          <button onClick={handleLogout} className="btn btn-secondary">
             Đăng xuất
           </button>
         </div>
@@ -393,10 +520,32 @@ function AdminDashboard() {
         </div>
       </div>
 
+      {/* Delete selected button */}
+      {selectedIds.length > 0 && (
+        <div style={{ marginBottom: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>Đã chọn {selectedIds.length} khách hàng</span>
+          <button 
+            onClick={handleDeleteSelected}
+            disabled={deleting}
+            className="btn btn-secondary"
+            style={{ padding: '10px 20px', background: '#dc3545', color: 'white' }}
+          >
+            {deleting ? 'Đang xóa...' : `Xóa ${selectedIds.length} khách hàng`}
+          </button>
+        </div>
+      )}
+
       <div className="table-container">
         <table className="data-table">
           <thead>
             <tr>
+              <th style={{ width: '50px' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0}
+                  onChange={handleSelectAll}
+                />
+              </th>
               <th>ID</th>
               <th>Họ tên</th>
               <th>Số điện thoại</th>
@@ -410,6 +559,19 @@ function AdminDashboard() {
           <tbody>
             {filteredCustomers.map(customer => (
               <tr key={customer.id} style={getRowStyle(customer.status)}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(customer.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds([...selectedIds, customer.id]);
+                      } else {
+                        setSelectedIds(selectedIds.filter(id => id !== customer.id));
+                      }
+                    }}
+                  />
+                </td>
                 <td style={{ fontWeight: 'bold', fontSize: '16px' }}>{customer.id}</td>
                 <td>{customer.name}</td>
                 <td>{customer.phone}</td>
