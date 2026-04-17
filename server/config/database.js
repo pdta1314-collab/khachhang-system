@@ -10,12 +10,11 @@ const pool = new Pool({
   idleTimeoutMillis: 30000
 });
 
-// Retry logic cho database connection
 let isInitialized = false;
-let initRetries = 0;
-const MAX_RETRIES = 5;
 
 async function initializeDatabase() {
+  if (isInitialized) return;
+  
   try {
     // Tạo bảng customers
     await pool.query(`
@@ -58,13 +57,6 @@ async function initializeDatabase() {
     isInitialized = true;
   } catch (err) {
     console.error('Lỗi khởi tạo database:', err.message);
-    if (initRetries < MAX_RETRIES) {
-      initRetries++;
-      console.log(`Retry ${initRetries}/${MAX_RETRIES} trong 5 giây...`);
-      setTimeout(initializeDatabase, 5000);
-    } else {
-      console.error('Không thể khởi tạo database sau nhiều lần thử');
-    }
   }
 }
 
@@ -83,31 +75,19 @@ async function createDefaultAdmin() {
   }
 }
 
-// Test connection và khởi tạo database
-async function testConnection() {
-  try {
-    await pool.query('SELECT NOW()');
-    console.log('Đã kết nối thành công đến PostgreSQL database');
-    if (!isInitialized) {
-      initializeDatabase();
-    }
-  } catch (err) {
-    console.error('Lỗi kết nối database:', err.message);
-    if (initRetries < MAX_RETRIES) {
-      initRetries++;
-      console.log(`Retry ${initRetries}/${MAX_RETRIES} trong 5 giây...`);
-      setTimeout(testConnection, 5000);
-    } else {
-      console.error('Không thể kết nối database sau nhiều lần thử');
-    }
+// Lazy initialization - chỉ khởi tạo khi có query đầu tiên
+pool.on('connect', () => {
+  console.log('Đã kết nối đến PostgreSQL database');
+  if (!isInitialized) {
+    initializeDatabase();
   }
-}
+});
 
 pool.on('error', (err) => {
   console.error('Lỗi kết nối database:', err.message);
 });
 
-// Bắt đầu test connection
-testConnection();
+// Không kết nối ngay khi server start - lazy connection
+// Database sẽ được khởi tạo khi có query đầu tiên
 
 module.exports = pool;
