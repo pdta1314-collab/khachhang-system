@@ -1,60 +1,48 @@
-const db = require('../config/database');
+const pool = require('../config/database');
 
 class CustomerImage {
-  static create(customerId, imagePath) {
-    return new Promise((resolve, reject) => {
-      const sql = 'INSERT INTO customer_images (customer_id, image_path) VALUES (?, ?)';
-      
-      db.run(sql, [customerId, imagePath], function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ id: this.lastID });
-        }
-      });
-    });
+  static async create(customerId, imagePath) {
+    const sql = 'INSERT INTO customer_images (customer_id, image_path) VALUES ($1, $2) RETURNING id';
+    
+    try {
+      const result = await pool.query(sql, [customerId, imagePath]);
+      return { id: result.rows[0].id };
+    } catch (err) {
+      throw err;
+    }
   }
 
-  static getByCustomerId(customerId) {
-    return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM customer_images WHERE customer_id = ? ORDER BY created_at ASC';
-      
-      db.all(sql, [customerId], (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      });
-    });
+  static async getByCustomerId(customerId) {
+    const sql = 'SELECT * FROM customer_images WHERE customer_id = $1 ORDER BY created_at ASC';
+    
+    try {
+      const result = await pool.query(sql, [customerId]);
+      return result.rows;
+    } catch (err) {
+      throw err;
+    }
   }
 
-  static delete(id) {
-    return new Promise((resolve, reject) => {
-      const sql = 'DELETE FROM customer_images WHERE id = ?';
-      
-      db.run(sql, [id], function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ changes: this.changes });
-        }
-      });
-    });
+  static async delete(id) {
+    const sql = 'DELETE FROM customer_images WHERE id = $1';
+    
+    try {
+      await pool.query(sql, [id]);
+      return { changes: 1 };
+    } catch (err) {
+      throw err;
+    }
   }
 
-  static deleteByCustomerId(customerId) {
-    return new Promise((resolve, reject) => {
-      const sql = 'DELETE FROM customer_images WHERE customer_id = ?';
-      
-      db.run(sql, [customerId], function(err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({ changes: this.changes });
-        }
-      });
-    });
+  static async deleteByCustomerId(customerId) {
+    const sql = 'DELETE FROM customer_images WHERE customer_id = $1';
+    
+    try {
+      await pool.query(sql, [customerId]);
+      return { changes: 1 };
+    } catch (err) {
+      throw err;
+    }
   }
 }
 

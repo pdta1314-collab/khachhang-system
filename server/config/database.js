@@ -1,85 +1,80 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 
-// Lưu database vào /data (Railway volume) hoặc local nếu không có
-const dbPath = process.env.RAILWAY_VOLUME_MOUNT_PATH 
-  ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'database.db')
-  : path.join(__dirname, '../../database.db');
+// Sử dụng DATABASE_URL từ Railway hoặc local fallback
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/khachhang';
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Lỗi kết nối database:', err.message);
-  } else {
-    console.log('Đã kết nối thành công đến SQLite database');
-    initializeDatabase();
-  }
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-function initializeDatabase() {
-  db.serialize(() => {
+pool.on('connect', () => {
+  console.log('Đã kết nối thành công đến PostgreSQL database');
+  initializeDatabase();
+});
+
+pool.on('error', (err) => {
+  console.error('Lỗi kết nối database:', err.message);
+});
+
+async function initializeDatabase() {
+  try {
     // Tạo bảng customers
-    db.run(`CREATE TABLE IF NOT EXISTS customers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      outfit TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      video_path TEXT,
-      unique_id TEXT UNIQUE NOT NULL
-    )`, (err) => {
-      if (err) {
-        console.error('Lỗi tạo bảng customers:', err.message);
-      } else {
-        console.log('Bảng customers đã sẵn sàng');
-      }
-    });
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        outfit TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        video_path TEXT,
+        unique_id TEXT UNIQUE NOT NULL
+      )
+    `);
+    console.log('Bảng customers đã sẵn sàng');
 
-    // Tạo bảng customer_images để lưu nhiều ảnh cho mỗi khách hàng
-    db.run(`CREATE TABLE IF NOT EXISTS customer_images (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      customer_id INTEGER NOT NULL,
-      image_path TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
-    )`, (err) => {
-      if (err) {
-        console.error('Lỗi tạo bảng customer_images:', err.message);
-      } else {
-        console.log('Bảng customer_images đã sẵn sàng');
-      }
-    });
+    // Tạo bảng customer_images
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS customer_images (
+        id SERIAL PRIMARY KEY,
+        customer_id INTEGER NOT NULL,
+        image_path TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('Bảng customer_images đã sẵn sàng');
 
-    // Tạo bảng admin users
-    db.run(`CREATE TABLE IF NOT EXISTS admin_users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`, (err) => {
-      if (err) {
-        console.error('Lỗi tạo bảng admin_users:', err.message);
-      } else {
-        console.log('Bảng admin_users đã sẵn sàng');
-        // Tạo admin mặc định nếu chưa có
-        createDefaultAdmin();
-      }
-    });
-  });
+    // Tạo bảng admin_users
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admin_users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Bảng admin_users đã sẵn sàng');
+
+    // Tạo admin mặc định nếu chưa có
+    await createDefaultAdmin();
+  } catch (err) {
+    console.error('Lỗi khởi tạo database:', err.message);
+  }
 }
 
-function createDefaultAdmin() {
-  const bcrypt = require('bcryptjs');
-  const defaultPassword = bcrypt.hashSync('admin123', 10);
-  
-  db.run(`INSERT OR IGNORE INTO admin_users (username, password) VALUES (?, ?)`, 
-    ['admin', defaultPassword], 
-    (err) => {
-      if (err) {
-        console.error('Lỗi tạo admin mặc định:', err.message);
-      } else {
-        console.log('Admin mặc định đã sẵn sàng (username: admin, password: admin123)');
-      }
-    }
-  );
+async function createDefaultAdmin() {
+  try {
+    const bcrypt = require('bcryptjs');
+    const defaultPassword = bcrypt.hashSync('admin123', 10);
+    
+    await pool.query(
+      'INSERT INTO admin_users (username, password) SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM admin_users WHERE username = $1)',
+      ['admin', defaultPassword]
+    );
+    console.log('Admin mặc định đã sẵn sàng (username: admin, password: admin123)');
+  } catch (err) {
+    console.error('Lỗi tạo admin mặc định:', err.message);
+  }
 }
 
-module.exports = db;
+module.exports = pool;
