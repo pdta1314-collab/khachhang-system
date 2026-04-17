@@ -6,7 +6,8 @@ const API_URL = '/api';
 
 function CustomerForm() {
   const [name, setName] = useState('');
-  const [outfit, setOutfit] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -15,8 +16,8 @@ function CustomerForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!name.trim() || !outfit.trim()) {
-      setError('Vui lòng nhập đầy đủ họ tên và trang phục');
+    if (!name.trim() || !phone.trim()) {
+      setError('Vui lòng nhập đầy đủ họ tên và số điện thoại');
       return;
     }
 
@@ -26,7 +27,8 @@ function CustomerForm() {
     try {
       const response = await axios.post(`${API_URL}/customers`, {
         name: name.trim(),
-        outfit: outfit.trim()
+        phone: phone.trim(),
+        email: email.trim()
       });
 
       if (response.data.success) {
@@ -40,7 +42,8 @@ function CustomerForm() {
           downloadUrl: qrUrl // Override URL với URL hiện tại
         });
         setName('');
-        setOutfit('');
+        setPhone('');
+        setEmail('');
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại');
@@ -84,14 +87,25 @@ function CustomerForm() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="outfit">Trang phục hôm nay</label>
+                <label htmlFor="phone">Số điện thoại</label>
                 <input
-                  type="text"
-                  id="outfit"
-                  value={outfit}
-                  onChange={(e) => setOutfit(e.target.value)}
-                  placeholder="Mô tả trang phục của bạn"
+                  type="tel"
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Nhập số điện thoại của bạn"
                   required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email (không bắt buộc)</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Nhập email của bạn"
                 />
               </div>
 
@@ -138,6 +152,19 @@ function CustomerForm() {
               />
             </div>
 
+            {/* Hiển thị ID lớn */}
+            <div style={{ marginTop: '20px', padding: '20px', background: '#667eea', borderRadius: '8px', color: 'white', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>
+                Số ID của bạn
+              </p>
+              <p style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '8px' }}>
+                {customerData?.customer?.id}
+              </p>
+              <p style={{ fontSize: '12px', opacity: 0.8 }}>
+                Vui lòng nhớ số ID này để nhận video
+              </p>
+            </div>
+
             <div style={{ marginTop: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
               <p style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <strong>Thông tin đã đăng ký:</strong>
@@ -145,8 +172,19 @@ function CustomerForm() {
               <p style={{ textAlign: 'center', marginBottom: '8px' }}>
                 <strong>Họ tên:</strong> {customerData?.customer?.name}
               </p>
-              <p style={{ textAlign: 'center' }}>
-                <strong>Trang phục:</strong> {customerData?.customer?.outfit}
+              <p style={{ textAlign: 'center', marginBottom: '8px' }}>
+                <strong>Số điện thoại:</strong> {customerData?.customer?.phone}
+              </p>
+              {customerData?.customer?.email && (
+                <p style={{ textAlign: 'center', marginBottom: '8px' }}>
+                  <strong>Email:</strong> {customerData?.customer?.email}
+                </p>
+              )}
+              <p style={{ textAlign: 'center', fontSize: '14px', color: '#666' }}>
+                <strong>Giờ đăng ký:</strong> {new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+              <p style={{ textAlign: 'center', marginTop: '8px', padding: '8px', background: customerData?.customer?.status === 'Đang chụp' ? '#ffebee' : '#e3f2fd', borderRadius: '4px', color: customerData?.customer?.status === 'Đang chụp' ? '#c62828' : '#1565c0', fontWeight: 'bold' }}>
+                Trạng thái: {customerData?.customer?.status}
               </p>
             </div>
 

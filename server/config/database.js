@@ -22,13 +22,26 @@ async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS customers (
         id SERIAL PRIMARY KEY,
         name TEXT NOT NULL,
-        outfit TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        phone TEXT NOT NULL,
+        email TEXT,
+        status TEXT DEFAULT 'Đang chờ',
+        registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         video_path TEXT,
         unique_id TEXT UNIQUE NOT NULL
       )
     `);
     console.log('Bảng customers đã sẵn sàng');
+
+    // Migration: thêm cột mới nếu bảng cũ tồn tại
+    try {
+      await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS phone TEXT`);
+      await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS email TEXT`);
+      await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Đang chờ'`);
+      await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
+      console.log('Migration: Đã thêm cột phone, email, status, registration_time');
+    } catch (err) {
+      console.log('Migration info:', err.message);
+    }
 
     // Tạo bảng customer_images
     await pool.query(`

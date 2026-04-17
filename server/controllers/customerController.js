@@ -45,13 +45,39 @@ const upload = multer({
 // Tạo khách hàng mới
 exports.createCustomer = async (req, res) => {
   try {
-    const { name, outfit } = req.body;
+    const { name, phone, email } = req.body;
     
-    if (!name || !outfit) {
-      return res.status(400).json({ error: 'Vui lòng nhập đầy đủ họ tên và trang phục' });
+    if (!name || !phone) {
+      return res.status(400).json({ error: 'Vui lòng nhập đầy đủ họ tên và số điện thoại' });
     }
 
-    const customer = await Customer.create(name, outfit);
+    // Kiểm tra có khách đang chụp không
+    const currentlyShooting = await Customer.getCurrentlyShooting();
+    const waitingList = await Customer.getWaitingList();
+    
+    let status = 'Đang chờ';
+    
+    if (!currentlyShooting) {
+      // Không có ai đang chụp -> khách mới là người đang chụp
+      status = 'Đang chụp';
+    }
+
+    const customer = await Customer.create(name, phone, email);
+    
+    // Cập nhật status
+    await Customer.updateStatus(customer.id, status);
+    customer.status = status;
+    
+    // Nếu có người đang chụp và khách mới là người thứ 2+ trong hàng chờ
+    // thì người đang chụp chuyển sang "Đã chụp xong", người chờ đầu tiên chuyển sang "Đang chụp"
+    if (currentlyShooting && waitingList.length >= 1) {
+      // Người đang chụp chuyển sang "Đã chụp xong"
+      await Customer.updateStatus(currentlyShooting.id, 'Đã chụp xong');
+      // Người đầu tiên trong hàng chờ chuyển sang "Đang chụp"
+      if (waitingList.length > 0) {
+        await Customer.updateStatus(waitingList[0].id, 'Đang chụp');
+      }
+    }
     
     // Tạo QR code
     const baseUrl = BASE_URL;
@@ -66,7 +92,9 @@ exports.createCustomer = async (req, res) => {
         id: customer.id,
         uniqueId: customer.uniqueId,
         name,
-        outfit
+        phone,
+        email,
+        status
       },
       qrCode,
       downloadUrl: qrUrl
@@ -96,7 +124,10 @@ exports.getCustomer = async (req, res) => {
         id: customer.id,
         uniqueId: customer.uniqueId,
         name: customer.name,
-        outfit: customer.outfit,
+        phone: customer.phone,
+        email: customer.email,
+        status: customer.status,
+        registrationTime: customer.registration_time,
         createdAt: customer.created_at,
         hasVideo: !!customer.video_path,
         videoUrl
@@ -127,7 +158,10 @@ exports.getCustomerByUniqueId = async (req, res) => {
         id: customer.id,
         uniqueId: customer.uniqueId,
         name: customer.name,
-        outfit: customer.outfit,
+        phone: customer.phone,
+        email: customer.email,
+        status: customer.status,
+        registrationTime: customer.registration_time,
         createdAt: customer.created_at,
         hasVideo: !!customer.video_path,
         videoUrl
@@ -147,7 +181,9 @@ exports.getAllCustomers = async (req, res) => {
     const baseUrl = BASE_URL;
     const customersWithUrls = customers.map(c => ({
       ...c,
-      videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null
+      videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null,
+      hasVideo: !!c.video_path,
+      hasImages: c.image_count > 0
     }));
 
     res.json({
@@ -326,34 +362,129 @@ exports.deleteImage = async (req, res) => {
     const { imageId } = req.params;
     
     // Lấy thông tin ảnh để xóa file
-    const sql = 'SELECT image_path FROM customer_images WHERE id = ?';
-    const db = require('../config/database');
+    const pool = require('../config/database');
+    const result = await pool.query('SELECT image_path FROM customer_images WHERE id = $1', [imageId]);
+    const row = result.rows[0];
     
-    db.get(sql, [imageId], (err, row) => {
-      if (err) {
-        console.error('Lỗi lấy thông tin ảnh:', err);
-        return res.status(500).json({ error: 'Lỗi server' });
-      }
-      
-      if (row && row.image_path && fs.existsSync(row.image_path)) {
-        fs.unlinkSync(row.image_path);
-      }
-      
-      CustomerImage.delete(imageId)
-        .then(() => {
-          res.json({
-            success: true,
-            message: 'Đã xóa ảnh thành công'
-          });
-        })
-        .catch(err => {
-          console.error('Lỗi xóa ảnh:', err);
-          res.status(500).json({ error: 'Lỗi server khi xóa ảnh' });
-        });
+    if (row && row.image_path && fs.existsSync(row.image_path)) {
+      fs.unlinkSync(row.image_path);
+    }
+    
+    await CustomerImage.delete(imageId);
+    res.json({
+      success: true,
+      message: 'Đã xóa ảnh thành công'
     });
   } catch (error) {
     console.error('Lỗi xóa ảnh:', error);
     res.status(500).json({ error: 'Lỗi server khi xóa ảnh' });
+  }
+};
+
+// Lấy danh sách khách hàng mới nhất (cho auto-refresh)
+exports.getLatestCustomers = async (req, res) => {
+  try {
+    const { since } = req.query;
+    const customers = await Customer.getAll();
+    
+    // Lọc khách hàng mới hơn thời gian 'since'
+    let latestCustomers = customers;
+    if (since) {
+      const sinceTime = new Date(since).getTime();
+      latestCustomers = customers.filter(c => new Date(c.registration_time).getTime() > sinceTime);
+    }
+    
+    const baseUrl = BASE_URL;
+    const customersWithUrls = latestCustomers.map(c => ({
+      ...c,
+      videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null,
+      hasVideo: !!c.video_path,
+      hasImages: c.image_count > 0
+    }));
+
+    res.json({
+      success: true,
+      customers: customersWithUrls,
+      currentlyShooting: await Customer.getCurrentlyShooting(),
+      waitingList: await Customer.getWaitingList()
+    });
+  } catch (error) {
+    console.error('Lỗi lấy danh sách khách hàng mới:', error);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+};
+
+// Batch upload video từ thư mục (theo ID khách hàng)
+exports.batchUploadVideos = async (req, res) => {
+  try {
+    const uploadedFiles = [];
+    const errors = [];
+    
+    // Lấy tất cả files từ request
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'Không có file nào được upload' });
+    }
+    
+    // Xử lý từng file
+    for (const file of req.files) {
+      try {
+        // Parse filename: ID1_T1.mp4, ID1_T2.mp4, ID2.mp4, etc.
+        const filename = file.originalname;
+        const match = filename.match(/^ID(\d+)(?:_T(\d+))?\.\w+$/i);
+        
+        if (!match) {
+          errors.push({ filename, error: 'Tên file không đúng định dạng (VD: ID1.mp4, ID1_T1.mp4)' });
+          continue;
+        }
+        
+        const customerId = parseInt(match[1]);
+        const takeNumber = match[2] || '1';
+        
+        // Kiểm tra khách hàng tồn tại
+        const customer = await Customer.getById(customerId);
+        if (!customer) {
+          errors.push({ filename, error: `Không tìm thấy khách hàng ID ${customerId}` });
+          continue;
+        }
+        
+        // Tạo thư mục cho khách hàng nếu chưa có
+        const customerFolder = path.join(__dirname, '../uploads', `customer_${customerId}`);
+        if (!fs.existsSync(customerFolder)) {
+          fs.mkdirSync(customerFolder, { recursive: true });
+        }
+        
+        // Di chuyển file vào thư mục khách hàng
+        const newFilename = `take_${takeNumber}_${Date.now()}${path.extname(filename)}`;
+        const newPath = path.join(customerFolder, newFilename);
+        
+        fs.renameSync(file.path, newPath);
+        
+        // Cập nhật video_path (nếu là take đầu tiên hoặc muốn lưu tất cả)
+        const relativePath = `uploads/customer_${customerId}/${newFilename}`;
+        await Customer.updateVideo(customerId, relativePath);
+        
+        uploadedFiles.push({
+          customerId,
+          customerName: customer.name,
+          filename: newFilename,
+          takeNumber
+        });
+        
+      } catch (err) {
+        errors.push({ filename: file.originalname, error: err.message });
+      }
+    }
+    
+    res.json({
+      success: true,
+      uploaded: uploadedFiles.length,
+      files: uploadedFiles,
+      errors: errors.length > 0 ? errors : undefined
+    });
+    
+  } catch (error) {
+    console.error('Lỗi batch upload videos:', error);
+    res.status(500).json({ error: 'Lỗi server khi upload videos' });
   }
 };
 

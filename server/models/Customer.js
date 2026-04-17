@@ -2,12 +2,12 @@ const pool = require('../config/database');
 const { randomUUID } = require('crypto');
 
 class Customer {
-  static async create(name, outfit) {
+  static async create(name, phone, email) {
     const uniqueId = randomUUID();
-    const sql = 'INSERT INTO customers (name, outfit, unique_id) VALUES ($1, $2, $3) RETURNING id, unique_id';
+    const sql = 'INSERT INTO customers (name, phone, email, unique_id) VALUES ($1, $2, $3, $4) RETURNING id, unique_id';
     
     try {
-      const result = await pool.query(sql, [name, outfit, uniqueId]);
+      const result = await pool.query(sql, [name, phone, email, uniqueId]);
       return { id: result.rows[0].id, uniqueId: result.rows[0].unique_id };
     } catch (err) {
       throw err;
@@ -25,7 +25,10 @@ class Customer {
           id: row.id,
           uniqueId: row.unique_id,
           name: row.name,
-          outfit: row.outfit,
+          phone: row.phone,
+          email: row.email,
+          status: row.status,
+          registration_time: row.registration_time,
           created_at: row.created_at,
           video_path: row.video_path
         };
@@ -47,7 +50,10 @@ class Customer {
           id: row.id,
           uniqueId: row.unique_id,
           name: row.name,
-          outfit: row.outfit,
+          phone: row.phone,
+          email: row.email,
+          status: row.status,
+          registration_time: row.registration_time,
           created_at: row.created_at,
           video_path: row.video_path
         };
@@ -64,7 +70,7 @@ class Customer {
       FROM customers c 
       LEFT JOIN customer_images ci ON c.id = ci.customer_id 
       GROUP BY c.id 
-      ORDER BY c.created_at DESC
+      ORDER BY c.registration_time DESC
     `;
     
     try {
@@ -73,11 +79,25 @@ class Customer {
         id: row.id,
         uniqueId: row.unique_id,
         name: row.name,
-        outfit: row.outfit,
+        phone: row.phone,
+        email: row.email,
+        status: row.status,
+        registration_time: row.registration_time,
         created_at: row.created_at,
         video_path: row.video_path,
         image_count: row.image_count
       }));
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  static async updateStatus(id, status) {
+    const sql = 'UPDATE customers SET status = $1 WHERE id = $2';
+    
+    try {
+      await pool.query(sql, [status, id]);
+      return { changes: 1 };
     } catch (err) {
       throw err;
     }
@@ -111,6 +131,38 @@ class Customer {
     try {
       await pool.query(sql, [id]);
       return { changes: 1 };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Lấy khách hàng đang chụp (status = 'Đang chụp')
+  static async getCurrentlyShooting() {
+    const sql = 'SELECT * FROM customers WHERE status = $1 ORDER BY registration_time DESC LIMIT 1';
+    
+    try {
+      const result = await pool.query(sql, ['Đang chụp']);
+      return result.rows[0] || null;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Lấy danh sách khách đang chờ (status = 'Đang chờ')
+    static async getWaitingList() {
+    const sql = 'SELECT * FROM customers WHERE status = $1 ORDER BY registration_time ASC';
+    
+    try {
+      const result = await pool.query(sql, ['Đang chờ']);
+      return result.rows.map(row => ({
+        id: row.id,
+        uniqueId: row.unique_id,
+        name: row.name,
+        phone: row.phone,
+        email: row.email,
+        status: row.status,
+        registration_time: row.registration_time
+      }));
     } catch (err) {
       throw err;
     }
