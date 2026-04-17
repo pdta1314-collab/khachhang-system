@@ -41,6 +41,7 @@ function AdminDashboard() {
   // Batch video upload states
   const [videoFolderFiles, setVideoFolderFiles] = useState([]);
   const [uploadingBatchVideos, setUploadingBatchVideos] = useState(false);
+  const [scanningFixedFolder, setScanningFixedFolder] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -349,6 +350,28 @@ function AdminDashboard() {
     }
   };
 
+  const handleScanFixedFolder = async () => {
+    const token = localStorage.getItem('adminToken');
+    setScanningFixedFolder(true);
+    try {
+      const response = await axios.post(`${API_URL}/customers/videos/scan-fixed-folder`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+        if (response.data.errors && response.data.errors.length > 0) {
+          alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
+        }
+        fetchCustomers(token);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Lỗi khi scan thư mục');
+    } finally {
+      setScanningFixedFolder(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (!uploadFile || !selectedCustomer) {
       setError('Vui lòng chọn file video');
@@ -488,6 +511,9 @@ function AdminDashboard() {
               {uploadingBatchVideos ? 'Đang upload...' : `Upload ${videoFolderFiles.length} video`}
             </button>
           )}
+          <button onClick={handleScanFixedFolder} disabled={scanningFixedFolder} className="btn btn-primary" style={{ marginLeft: '20px' }}>
+            {scanningFixedFolder ? 'Đang scan...' : '📂 Scan thư mục videos_to_process'}
+          </button>
         </div>
       </div>
 
