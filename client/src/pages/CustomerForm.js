@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
 
-const API_URL = 'https://web-production-e5a3a.up.railway.app/api';
+const API_URL = '/api';
 
 function CustomerForm() {
   const [name, setName] = useState('');

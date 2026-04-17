@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://web-production-e5a3a.up.railway.app/api';
+const API_URL = '/api';
 
 function VideoDownload() {
   const { uniqueId } = useParams();

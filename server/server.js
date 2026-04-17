@@ -13,8 +13,12 @@ const BASE_URL = process.env.BASE_URL || RAILWAY_URL || `http://localhost:${PORT
 // Cập nhật BASE_URL vào process.env để các module khác sử dụng
 process.env.BASE_URL = BASE_URL;
 
-// Middleware
-app.use(cors());
+// Middleware - CORS cho phép tất cả origins
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

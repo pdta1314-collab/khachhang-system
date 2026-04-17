@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'https://web-production-e5a3a.up.railway.app/api';
+const API_URL = '/api';
 
 function Login() {
   const navigate = useNavigate();
