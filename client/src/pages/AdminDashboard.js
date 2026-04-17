@@ -453,20 +453,10 @@ function AdminDashboard() {
                       Ảnh
                     </button>
                     
-                    <a 
-                      href={`/video/${customer.uniqueId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-secondary"
-                      style={{ padding: '8px 16px', fontSize: '14px', textDecoration: 'none', display: 'inline-block' }}
-                    >
-                      Link
-                    </a>
-
                     <button 
-                      onClick={() => handleDelete(customer.id)}
-                      className="btn btn-danger"
-                      style={{ padding: '8px 16px', fontSize: '14px' }}
+                      onClick={() => handleDeleteCustomer(customer.id)}
+                      className="btn btn-secondary"
+                      style={{ padding: '8px 16px', fontSize: '14px', background: '#e74c3c' }}
                     >
                       Xóa
                     </button>
@@ -685,6 +675,86 @@ function AdminDashboard() {
             <p style={{ fontSize: '14px', color: '#666', marginTop: '20px' }}>
               💡 Lưu ý: Các ảnh này dùng để render video. Bạn có thể chụp nhiều batch hình, upload tất cả vào đây, sau đó chọn ảnh ưng ý để render video.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Xem chi tiết khách hàng */}
+      {viewCustomer && (
+        <div className="modal" style={{ display: 'flex' }} onClick={() => setViewCustomer(null)}>
+          <div className="modal-content" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Thông tin khách hàng #{viewCustomer.id}</h3>
+              <button className="close-btn" onClick={() => setViewCustomer(null)}>&times;</button>
+            </div>
+            
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              {/* ID lớn */}
+              <div style={{ 
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                color: 'white', 
+                padding: '20px', 
+                borderRadius: '12px',
+                marginBottom: '20px'
+              }}>
+                <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>Số ID</p>
+                <p style={{ fontSize: '56px', fontWeight: 'bold', marginBottom: '8px' }}>{viewCustomer.id}</p>
+                <p style={{ fontSize: '12px', opacity: 0.8 }}>Vui lòng nhớ số ID này</p>
+              </div>
+
+              {/* QR Code */}
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>Mã QR để tải video</p>
+                <QRCodeSVG 
+                  value={`${window.location.origin}/video/${viewCustomer.uniqueId}`}
+                  size={200}
+                  style={{ margin: '0 auto', display: 'block' }}
+                />
+              </div>
+
+              {/* Thông tin chi tiết */}
+              <div style={{ textAlign: 'left', background: '#f5f5f5', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
+                <p style={{ marginBottom: '8px' }}><strong>Họ tên:</strong> {viewCustomer.name}</p>
+                <p style={{ marginBottom: '8px' }}><strong>Số điện thoại:</strong> {viewCustomer.phone || '-'}</p>
+                <p style={{ marginBottom: '8px' }}><strong>Email:</strong> {viewCustomer.email || '-'}</p>
+                <p style={{ marginBottom: '8px' }}>
+                  <strong>Trạng thái:</strong>{' '}
+                  <span style={{
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    backgroundColor: viewCustomer.status === 'Đang chụp' ? '#ef5350' : viewCustomer.status === 'Đang chờ' ? '#42a5f5' : '#9e9e9e',
+                    color: 'white'
+                  }}>
+                    {viewCustomer.status}
+                  </span>
+                </p>
+                <p><strong>Giờ đăng ký:</strong> {viewCustomer.registration_time ? new Date(viewCustomer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}</p>
+              </div>
+
+              {/* Video đã upload */}
+              {viewCustomer.video_path && (
+                <div style={{ marginBottom: '15px' }}>
+                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Video đã upload:</p>
+                  <video 
+                    controls 
+                    style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }}
+                    src={viewCustomer.videoUrl}
+                  />
+                </div>
+              )}
+
+              {/* Link tải video */}
+              <a 
+                href={`/video/${viewCustomer.uniqueId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+                style={{ display: 'inline-block', textDecoration: 'none', marginTop: '10px' }}
+              >
+                Mở trang tải video
+              </a>
+            </div>
           </div>
         </div>
       )}
