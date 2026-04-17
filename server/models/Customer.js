@@ -8,7 +8,7 @@ class Customer {
     
     try {
       const result = await pool.query(sql, [name, outfit, uniqueId]);
-      return { id: result.rows[0].id, uniqueId: result.rows[0].uniqueId };
+      return { id: result.rows[0].id, uniqueId: result.rows[0].unique_id };
     } catch (err) {
       throw err;
     }
@@ -19,7 +19,18 @@ class Customer {
     
     try {
       const result = await pool.query(sql, [id]);
-      return result.rows[0];
+      const row = result.rows[0];
+      if (row) {
+        return {
+          id: row.id,
+          uniqueId: row.unique_id,
+          name: row.name,
+          outfit: row.outfit,
+          created_at: row.created_at,
+          video_path: row.video_path
+        };
+      }
+      return null;
     } catch (err) {
       throw err;
     }
@@ -30,7 +41,18 @@ class Customer {
     
     try {
       const result = await pool.query(sql, [uniqueId]);
-      return result.rows[0];
+      const row = result.rows[0];
+      if (row) {
+        return {
+          id: row.id,
+          uniqueId: row.unique_id,
+          name: row.name,
+          outfit: row.outfit,
+          created_at: row.created_at,
+          video_path: row.video_path
+        };
+      }
+      return null;
     } catch (err) {
       throw err;
     }
@@ -47,7 +69,15 @@ class Customer {
     
     try {
       const result = await pool.query(sql);
-      return result.rows;
+      return result.rows.map(row => ({
+        id: row.id,
+        uniqueId: row.unique_id,
+        name: row.name,
+        outfit: row.outfit,
+        created_at: row.created_at,
+        video_path: row.video_path,
+        image_count: row.image_count
+      }));
     } catch (err) {
       throw err;
     }
