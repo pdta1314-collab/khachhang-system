@@ -39,9 +39,7 @@ function AdminDashboard() {
   const [deleting, setDeleting] = useState(false);
 
   // Batch video upload states
-  const [videoFolderFiles, setVideoFolderFiles] = useState([]);
-  const [uploadingBatchVideos, setUploadingBatchVideos] = useState(false);
-  const [scanningFixedFolder, setScanningFixedFolder] = useState(false);
+  const [scanningVideosFolder, setScanningVideosFolder] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -313,48 +311,11 @@ function AdminDashboard() {
     }
   };
 
-  const handleBatchVideoUpload = async () => {
-    if (videoFolderFiles.length === 0) {
-      setError('Vui lòng chọn thư mục video');
-      return;
-    }
-
+  const handleScanVideosFolder = async () => {
     const token = localStorage.getItem('adminToken');
-    const formData = new FormData();
-    
-    videoFolderFiles.forEach(file => {
-      formData.append('videos', file);
-    });
-
-    setUploadingBatchVideos(true);
+    setScanningVideosFolder(true);
     try {
-      const response = await axios.post(`${API_URL}/customers/videos/batch`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (response.data.success) {
-        alert(`Đã upload ${response.data.uploaded} video thành công!`);
-        if (response.data.errors && response.data.errors.length > 0) {
-          alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
-        }
-        setVideoFolderFiles([]);
-        fetchCustomers(token);
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi upload video');
-    } finally {
-      setUploadingBatchVideos(false);
-    }
-  };
-
-  const handleScanFixedFolder = async () => {
-    const token = localStorage.getItem('adminToken');
-    setScanningFixedFolder(true);
-    try {
-      const response = await axios.post(`${API_URL}/customers/videos/scan-fixed-folder`, {}, {
+      const response = await axios.post(`${API_URL}/customers/videos/scan-videos`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -366,9 +327,9 @@ function AdminDashboard() {
         fetchCustomers(token);
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Lỗi khi scan thư mục');
+      setError(err.response?.data?.error || 'Lỗi khi scan thư mục videos');
     } finally {
-      setScanningFixedFolder(false);
+      setScanningVideosFolder(false);
     }
   };
 
@@ -496,23 +457,8 @@ function AdminDashboard() {
           <button onClick={exportToCSV} className="btn btn-primary">
             Xuất CSV
           </button>
-          <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <span>📁 Chọn video (nhiều file)</span>
-            <input
-              type="file"
-              multiple
-              accept="video/*"
-              onChange={(e) => setVideoFolderFiles(Array.from(e.target.files))}
-              style={{ display: 'none' }}
-            />
-          </label>
-          {videoFolderFiles.length > 0 && (
-            <button onClick={handleBatchVideoUpload} disabled={uploadingBatchVideos} className="btn btn-primary">
-              {uploadingBatchVideos ? 'Đang upload...' : `Upload ${videoFolderFiles.length} video`}
-            </button>
-          )}
-          <button onClick={handleScanFixedFolder} disabled={scanningFixedFolder} className="btn btn-primary" style={{ marginLeft: '20px' }}>
-            {scanningFixedFolder ? 'Đang scan...' : '📂 Scan thư mục videos_to_process'}
+          <button onClick={handleScanVideosFolder} disabled={scanningVideosFolder} className="btn btn-primary">
+            {scanningVideosFolder ? 'Đang scan...' : '📂 Scan videos folder'}
           </button>
         </div>
       </div>

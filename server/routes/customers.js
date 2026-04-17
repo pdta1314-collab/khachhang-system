@@ -18,8 +18,8 @@ router.post('/videos/batch', adminController.verifyToken, customerController.upl
 // Batch video upload từ folder (admin only) - scan folder và upload video theo ID
 router.post('/videos/batch-folder', adminController.verifyToken, customerController.batchUploadFromFolder);
 
-// Scan và upload video từ thư mục cố định (admin only) - scan /uploads/videos_to_process
-router.post('/videos/scan-fixed-folder', adminController.verifyToken, customerController.scanAndUploadFromFixedFolder);
+// Scan và upload video từ thư mục videos (admin only) - scan /uploads/videos
+router.post('/videos/scan-videos', adminController.verifyToken, customerController.scanVideosFolder);
 
 // Video routes (admin only)
 router.post('/:id/video', adminController.verifyToken, customerController.uploadMiddleware.single('video'), customerController.uploadVideo);

@@ -585,18 +585,18 @@ exports.batchUploadFromFolder = async (req, res) => {
   }
 };
 
-// Scan và upload video từ thư mục cố định
-exports.scanAndUploadFromFixedFolder = async (req, res) => {
+// Scan và upload video từ thư mục videos
+exports.scanVideosFolder = async (req, res) => {
   try {
-    // Thư mục cố định để ném video vào
-    const fixedFolderPath = path.join(__dirname, '../uploads/videos_to_process');
+    // Thư mục videos để ném video vào
+    const videosFolderPath = path.join(__dirname, '../uploads/videos');
     
     // Kiểm tra thư mục tồn tại, nếu không thì tạo
-    if (!fs.existsSync(fixedFolderPath)) {
-      fs.mkdirSync(fixedFolderPath, { recursive: true });
+    if (!fs.existsSync(videosFolderPath)) {
+      fs.mkdirSync(videosFolderPath, { recursive: true });
       return res.json({
         success: true,
-        message: 'Đã tạo thư mục videos_to_process. Vui lòng ném video vào thư mục này.',
+        message: 'Đã tạo thư mục uploads/videos. Vui lòng ném video vào thư mục này.',
         uploaded: 0,
         files: [],
         errors: []
@@ -604,7 +604,7 @@ exports.scanAndUploadFromFixedFolder = async (req, res) => {
     }
 
     // Scan tất cả file video trong thư mục
-    const files = fs.readdirSync(fixedFolderPath);
+    const files = fs.readdirSync(videosFolderPath);
     const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
     const videoFiles = files.filter(file => 
       videoExtensions.includes(path.extname(file).toLowerCase())
@@ -613,7 +613,7 @@ exports.scanAndUploadFromFixedFolder = async (req, res) => {
     if (videoFiles.length === 0) {
       return res.json({
         success: true,
-        message: 'Thư mục videos_to_process không có file video nào.',
+        message: 'Thư mục uploads/videos không có file video nào.',
         uploaded: 0,
         files: [],
         errors: []
@@ -651,7 +651,7 @@ exports.scanAndUploadFromFixedFolder = async (req, res) => {
         }
         
         // Di chuyển file vào thư mục khách hàng
-        const sourcePath = path.join(fixedFolderPath, filename);
+        const sourcePath = path.join(videosFolderPath, filename);
         const newFilename = `take_${takeNumber}_${Date.now()}${path.extname(filename)}`;
         const newPath = path.join(customerFolder, newFilename);
         
@@ -677,15 +677,15 @@ exports.scanAndUploadFromFixedFolder = async (req, res) => {
     res.json({
       success: true,
       message: uploadedCount > 0 
-        ? `Đã upload ${uploadedCount} video thành công từ thư mục videos_to_process`
+        ? `Đã upload ${uploadedCount} video thành công từ thư mục uploads/videos`
         : 'Không có video nào được upload',
       uploaded: uploadedCount,
       files: uploadedFiles,
       errors
     });
   } catch (error) {
-    console.error('Lỗi scan và upload từ thư mục cố định:', error);
-    res.status(500).json({ error: 'Lỗi server khi scan thư mục' });
+    console.error('Lỗi scan và upload từ thư mục videos:', error);
+    res.status(500).json({ error: 'Lỗi server khi scan thư mục videos' });
   }
 };
 
