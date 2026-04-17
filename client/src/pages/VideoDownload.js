@@ -16,12 +16,18 @@ function VideoDownload() {
 
   const fetchCustomer = async () => {
     try {
+      console.log('Fetching customer with uniqueId:', uniqueId);
       const response = await axios.get(`${API_URL}/customers/unique/${uniqueId}`);
+      console.log('API response:', response.data);
       if (response.data.success) {
         setCustomer(response.data.customer);
+      } else {
+        setError('Không tìm thấy thông tin khách hàng');
       }
     } catch (err) {
-      setError('Không tìm thấy thông tin khách hàng');
+      console.error('Error fetching customer:', err);
+      console.error('Error response:', err.response?.data);
+      setError('Lỗi: ' + (err.response?.data?.error || err.message || 'Không tìm thấy thông tin khách hàng'));
     } finally {
       setLoading(false);
     }
