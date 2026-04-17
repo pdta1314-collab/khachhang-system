@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = '/api';
 
 function CustomerForm() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -124,13 +126,16 @@ function CustomerForm() {
                   'Gửi thông tin'
                 )}
               </button>
-            </form>
 
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              <a href="/admin" style={{ color: '#667eea', textDecoration: 'none' }}>
-                Đăng nhập Admin
-              </a>
-            </div>
+              <button 
+                type="button"
+                onClick={() => navigate('/admin')}
+                className="btn btn-secondary"
+                style={{ width: '100%', marginTop: '10px', padding: '12px' }}
+              >
+                🔐 Vào trang Admin
+              </button>
+            </form>
           </>
         ) : (
           <>

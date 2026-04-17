@@ -42,6 +42,10 @@ function AdminDashboard() {
   const [batchVideoFiles, setBatchVideoFiles] = useState([]);
   const [uploadingBatchVideos, setUploadingBatchVideos] = useState(false);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     const userStr = localStorage.getItem('adminUser');
@@ -302,7 +306,7 @@ function AdminDashboard() {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedIds(filteredCustomers.map(c => c.id));
+      setSelectedIds(paginatedCustomers.map(c => c.id));
     } else {
       setSelectedIds([]);
     }
@@ -420,6 +424,18 @@ function AdminDashboard() {
     return matchesSearch && matchesStatus && matchesVideo && matchesImage;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, videoFilter, imageFilter]);
+
   if (loading) {
     return (
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -444,12 +460,10 @@ function AdminDashboard() {
             Xuất CSV
           </button>
           <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <span>📁 Chọn folder video</span>
+            <span>📁 Chọn video (đặt tên theo ID)</span>
             <input
               type="file"
               multiple
-              webkitdirectory
-              directory
               accept="video/*"
               onChange={(e) => setBatchVideoFiles(Array.from(e.target.files))}
               style={{ display: 'none' }}
@@ -460,6 +474,9 @@ function AdminDashboard() {
               {uploadingBatchVideos ? 'Đang upload...' : `Upload ${batchVideoFiles.length} video`}
             </button>
           )}
+          <button onClick={() => navigate('/')} className="btn btn-secondary">
+            ↩ Quay lại đăng ký
+          </button>
           <button onClick={handleLogout} className="btn btn-secondary">
             Đăng xuất
           </button>
@@ -544,7 +561,7 @@ function AdminDashboard() {
               <th style={{ width: '50px' }}>
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === filteredCustomers.length && filteredCustomers.length > 0}
+                  checked={paginatedCustomers.length > 0 && selectedIds.length === paginatedCustomers.length}
                   onChange={handleSelectAll}
                 />
               </th>
@@ -559,7 +576,7 @@ function AdminDashboard() {
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map(customer => (
+            {paginatedCustomers.map(customer => (
               <tr key={customer.id} style={getRowStyle(customer.status)}>
                 <td>
                   <input
@@ -616,14 +633,6 @@ function AdminDashboard() {
                     >
                       Ảnh
                     </button>
-                    
-                    <button 
-                      onClick={() => handleDeleteCustomer(customer.id)}
-                      className="btn btn-secondary"
-                      style={{ padding: '8px 16px', fontSize: '14px', background: '#e74c3c' }}
-                    >
-                      Xóa
-                    </button>
                   </div>
                 </td>
               </tr>
@@ -634,6 +643,31 @@ function AdminDashboard() {
         {filteredCustomers.length === 0 && (
           <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
             Không tìm thấy khách hàng nào
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginTop: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="btn btn-secondary"
+              style={{ padding: '8px 16px' }}
+            >
+              ← Trước
+            </button>
+            <span style={{ fontWeight: 'bold', color: '#666' }}>
+              Trang {currentPage} / {totalPages}
+            </span>
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="btn btn-secondary"
+              style={{ padding: '8px 16px' }}
+            >
+              Sau →
+            </button>
           </div>
         )}
       </div>
