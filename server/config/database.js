@@ -32,13 +32,17 @@ async function initializeDatabase() {
     `);
     console.log('Bảng customers đã sẵn sàng');
 
-    // Migration: thêm cột mới nếu bảng cũ tồn tại
+    // Migration: thêm cột mới và sửa constraint nếu bảng cũ tồn tại
     try {
       await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS phone TEXT`);
       await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS email TEXT`);
       await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Đang chờ'`);
       await pool.query(`ALTER TABLE customers ADD COLUMN IF NOT EXISTS registration_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
-      console.log('Migration: Đã thêm cột phone, email, status, registration_time');
+      
+      // Bỏ NOT NULL constraint từ cột outfit (cho phép null vì đã chuyển sang phone/email)
+      await pool.query(`ALTER TABLE customers ALTER COLUMN outfit DROP NOT NULL`);
+      
+      console.log('Migration: Đã thêm cột mới và sửa constraints');
     } catch (err) {
       console.log('Migration info:', err.message);
     }
