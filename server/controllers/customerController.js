@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 // URL công khai (Railway)
-const BASE_URL = 'https://web-production-a6a88.up.railway.app';
+const BASE_URL = 'https://web-production-e5a3a.up.railway.app';
 
 // Cấu hình multer cho upload video
 const storage = multer.diskStorage({
