@@ -444,10 +444,12 @@ function AdminDashboard() {
             Xuất CSV
           </button>
           <label className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <span>📁 Upload Video (theo ID)</span>
+            <span>📁 Chọn folder video</span>
             <input
               type="file"
               multiple
+              webkitdirectory
+              directory
               accept="video/*"
               onChange={(e) => setBatchVideoFiles(Array.from(e.target.files))}
               style={{ display: 'none' }}

@@ -262,12 +262,9 @@ exports.deleteCustomer = async (req, res) => {
     // Reset sequence để gapless ID
     const pool = require('../config/database');
     try {
-      await pool.query(`
-        SELECT setval('customers_id_seq', 
-          COALESCE((SELECT MAX(id) FROM customers), 0) + 1, 
-          false
-        )
-      `);
+      const maxIdResult = await pool.query('SELECT COALESCE(MAX(id), 0) as max_id FROM customers');
+      const maxId = parseInt(maxIdResult.rows[0].max_id);
+      await pool.query(`SELECT setval('customers_id_seq', ${maxId + 1}, false)`);
     } catch (seqErr) {
       console.log('Reset sequence info:', seqErr.message);
     }
