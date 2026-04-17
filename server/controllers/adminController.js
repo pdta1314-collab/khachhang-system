@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const db = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -13,32 +13,36 @@ exports.login = async (req, res) => {
       return res.status(400).json({ error: 'Vui lòng nhập username và password' });
     }
 
-    const sql = 'SELECT * FROM admin_users WHERE username = $1';
-    const result = await pool.query(sql, [username]);
-    const admin = result.rows[0];
-
-    if (!admin) {
-      return res.status(401).json({ error: 'Username hoặc password không đúng' });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, admin.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Username hoặc password không đúng' });
-    }
-
-    const token = jwt.sign(
-      { id: admin.id, username: admin.username },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      success: true,
-      token,
-      admin: {
-        id: admin.id,
-        username: admin.username
+    const sql = 'SELECT * FROM admin_users WHERE username = ?';
+    db.get(sql, [username], async (err, admin) => {
+      if (err) {
+        console.error('Lỗi đăng nhập:', err);
+        return res.status(500).json({ error: 'Lỗi server' });
       }
+
+      if (!admin) {
+        return res.status(401).json({ error: 'Username hoặc password không đúng' });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, admin.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Username hoặc password không đúng' });
+      }
+
+      const token = jwt.sign(
+        { id: admin.id, username: admin.username },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      res.json({
+        success: true,
+        token,
+        admin: {
+          id: admin.id,
+          username: admin.username
+        }
+      });
     });
   } catch (error) {
     console.error('Lỗi đăng nhập:', error);
@@ -73,23 +77,32 @@ exports.changePassword = async (req, res) => {
       return res.status(400).json({ error: 'Vui lòng nhập đầy đủ password cũ và mới' });
     }
 
-    const sql = 'SELECT * FROM admin_users WHERE id = $1';
-    const result = await pool.query(sql, [adminId]);
-    const admin = result.rows[0];
+    const sql = 'SELECT * FROM admin_users WHERE id = ?';
+    db.get(sql, [adminId], async (err, admin) => {
+      if (err) {
+        console.error('Lỗi đổi password:', err);
+        return res.status(500).json({ error: 'Lỗi server' });
+      }
 
-    const isPasswordValid = await bcrypt.compare(oldPassword, admin.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Password cũ không đúng' });
-    }
+      const isPasswordValid = await bcrypt.compare(oldPassword, admin.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Password cũ không đúng' });
+      }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    const updateSql = 'UPDATE admin_users SET password = $1 WHERE id = $2';
-    
-    await pool.query(updateSql, [hashedNewPassword, adminId]);
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      const updateSql = 'UPDATE admin_users SET password = ? WHERE id = ?';
+      
+      db.run(updateSql, [hashedNewPassword, adminId], (err) => {
+        if (err) {
+          console.error('Lỗi cập nhật password:', err);
+          return res.status(500).json({ error: 'Lỗi server' });
+        }
 
-    res.json({
-      success: true,
-      message: 'Đổi password thành công'
+        res.json({
+          success: true,
+          message: 'Đổi password thành công'
+        });
+      });
     });
   } catch (error) {
     console.error('Lỗi đổi password:', error);
