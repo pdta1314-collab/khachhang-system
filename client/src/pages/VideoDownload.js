@@ -73,34 +73,7 @@ function VideoDownload() {
     setIsDownloading(true);
     
     try {
-      // Fetch video as blob
-      console.log('Fetching video blob...');
-      const response = await fetch(customer.videoUrl);
-      const blob = await response.blob();
-      console.log('Blob fetched, size:', blob.size);
-      
-      // Create file from blob
-      const file = new File([blob], `video-${customer.name}.mp4`, { type: 'video/mp4' });
-      console.log('File created:', file.name);
-      
-      // Use Web Share API with file (supports iOS Photos)
-      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
-        try {
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: `Video của ${customer.name}`,
-              text: 'Video từ sự kiện',
-              files: [file]
-            });
-            console.log('Share successful');
-            return;
-          }
-        } catch (shareErr) {
-          console.log('File share failed, trying URL share:', shareErr);
-        }
-      }
-      
-      // Fallback: Share URL
+      // Try URL sharing first (most reliable)
       if (typeof navigator !== 'undefined' && navigator.share) {
         try {
           await navigator.share({
@@ -111,16 +84,54 @@ function VideoDownload() {
           console.log('URL share successful');
           return;
         } catch (urlShareErr) {
-          console.log('URL share failed:', urlShareErr);
+          console.log('URL share failed, trying blob share:', urlShareErr);
         }
       }
       
-      // Fallback: Copy link
-      await navigator.clipboard.writeText(customer.videoUrl);
-      alert('Đã copy link video! Bạn có thể gửi link này cho người khác.');
+      // Try blob sharing for iOS Photos
+      try {
+        console.log('Fetching video blob...');
+        const response = await fetch(customer.videoUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        console.log('Blob fetched, size:', blob.size);
+        
+        // Create file from blob
+        const file = new File([blob], `video-${customer.name}.mp4`, { type: 'video/mp4' });
+        console.log('File created:', file.name);
+        
+        // Use Web Share API with file (supports iOS Photos)
+        if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+          try {
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: `Video của ${customer.name}`,
+                text: 'Video từ sự kiện',
+                files: [file]
+              });
+              console.log('File share successful');
+              return;
+            }
+          } catch (shareErr) {
+            console.log('File share failed:', shareErr);
+          }
+        }
+      } catch (blobErr) {
+        console.log('Blob fetch failed:', blobErr);
+      }
+      
+      // Fallback: Open video in new tab
+      console.log('Opening video in new tab as fallback');
+      window.open(customer.videoUrl, '_blank');
+      alert('Video đã mở trong tab mới. Vui lòng dùng nút Share của trình duyệt để lưu vào Photos.');
+      
     } catch (err) {
       console.error('Share error:', err);
       alert('Lỗi khi chia sẻ: ' + err.message);
+      // Final fallback: Open in new tab
+      window.open(customer.videoUrl, '_blank');
     } finally {
       setIsDownloading(false);
     }
