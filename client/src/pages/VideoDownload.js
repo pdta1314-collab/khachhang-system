@@ -40,72 +40,53 @@ function VideoDownload() {
   };
 
   const handleDownload = async () => {
-    if (!customer?.videoUrl) return;
+    if (!customer?.videoUrl) {
+      console.error('No video URL available');
+      return;
+    }
     
     setIsDownloading(true);
     
     try {
-      // Tải video dưới dạng blob để hỗ trợ tốt trên mobile
-      const response = await fetch(customer.videoUrl);
-      const blob = await response.blob();
-      
-      // Tạo URL từ blob
-      const blobUrl = window.URL.createObjectURL(blob);
-      
-      // Tạo link tải
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = `video-${customer.name}-${customer.id}.mp4`;
-      
-      // Đối với iOS Safari, cần mở trong tab mới
-      const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (isIOSDevice) {
-        // iOS: Mở video trong tab mới để người dùng có thể "Share" → "Save to Files"
-        window.open(customer.videoUrl, '_blank');
-      } else {
-        // Android và desktop: Tải trực tiếp
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-      
-      // Cleanup
-      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
-      
+      console.log('Downloading video from:', customer.videoUrl);
+      // Mở video trong tab mới - cách đơn giản và hoạt động tốt nhất
+      window.open(customer.videoUrl, '_blank');
     } catch (err) {
       console.error('Download error:', err);
-      // Fallback: Mở video trong tab mới nếu download thất bại
-      window.open(customer.videoUrl, '_blank');
+      alert('Lỗi khi tải video: ' + err.message);
     } finally {
       setIsDownloading(false);
     }
   };
 
   const handleShare = async () => {
-    if (!customer?.videoUrl) return;
+    if (!customer?.videoUrl) {
+      console.error('No video URL available');
+      return;
+    }
     
     // Sử dụng Web Share API nếu có (tốt cho mobile)
-    if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       try {
-        const response = await fetch(customer.videoUrl);
-        const blob = await response.blob();
-        const file = new File([blob], `video-${customer.name}.mp4`, { type: 'video/mp4' });
-        
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: `Video của ${customer.name}`,
-            text: 'Video từ sự kiện',
-            files: [file]
-          });
-          return;
-        }
+        await navigator.share({
+          title: `Video của ${customer.name}`,
+          text: `Video của ${customer.name} - tải tại: ${customer.videoUrl}`,
+          url: customer.videoUrl
+        });
+        return;
       } catch (err) {
-        console.log('Share failed, falling back to download');
+        console.log('Share failed, falling back to copy link');
       }
     }
     
-    // Fallback: Download
-    handleDownload();
+    // Fallback: Copy link to clipboard
+    try {
+      await navigator.clipboard.writeText(customer.videoUrl);
+      alert('Đã copy link video! Bạn có thể gửi link này cho người khác.');
+    } catch (err) {
+      console.error('Copy failed:', err);
+      alert('Không thể copy link. Vui lòng copy link thủ công từ trình duyệt.');
+    }
   };
 
   if (loading) {
@@ -156,21 +137,25 @@ function VideoDownload() {
           <p style={{ fontSize: '14px', color: '#666' }}>
             <strong>Ngày đăng ký:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleDateString('vi-VN')}
           </p>
+          <p style={{ fontSize: '14px', color: '#666' }}>
+            <strong>Giờ đăng ký:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleTimeString('vi-VN')}
+          </p>
         </div>
 
         {customer?.hasVideo ? (
           <div>
-            {/* Thông báo - video không xem được online do codec */}
+            {/* Hiển thị số lượng video */}
             <div style={{ 
               padding: '16px', 
-              backgroundColor: '#fff3cd', 
-              border: '1px solid #ffc107', 
+              backgroundColor: '#d4edda', 
+              border: '1px solid #28a745', 
               borderRadius: '8px', 
               marginBottom: '16px',
               fontSize: '14px',
-              color: '#856404'
+              color: '#155724',
+              textAlign: 'center'
             }}>
-              <strong>⚠️ Lưu ý:</strong> Video không xem được online do định dạng codec. Vui lòng tải về máy để xem.
+              <strong>✅ Video đã sẵn sàng để tải xuống</strong>
             </div>
 
             {/* Nút Tải về - hỗ trợ cả Android và iOS */}
@@ -235,9 +220,6 @@ function VideoDownload() {
               </div>
             )}
 
-            <p style={{ textAlign: 'center', fontSize: '14px', color: '#666' }}>
-              Video có thể xem trực tiếp hoặc tải về để lưu trữ
-            </p>
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '30px', background: '#fff3cd', borderRadius: '8px' }}>
