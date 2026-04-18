@@ -63,15 +63,16 @@ function CustomerForm() {
   return (
     <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
       <div className="card" style={{ width: '100%', maxWidth: '500px', padding: '30px' }}>
-        {/* Logo nhỏ ở trên */}
-        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+        {/* Logo to làm tiêu đề trang */}
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <img
             src="/logo.png"
             alt="Logo"
             style={{
-              width: '50px',
-              height: '50px',
-              objectFit: 'contain'
+              width: '300px',
+              height: 'auto',
+              objectFit: 'contain',
+              maxWidth: '100%'
             }}
           />
         </div>
