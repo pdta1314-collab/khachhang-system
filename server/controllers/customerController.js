@@ -152,6 +152,7 @@ exports.getCustomerByUniqueId = async (req, res) => {
 
     const baseUrl = BASE_URL;
     const videoUrl = customer.video_path ? `${baseUrl}/${customer.video_path}` : null;
+    console.log('getCustomerByUniqueId - videoUrl:', videoUrl, 'video_path:', customer.video_path, 'BASE_URL:', baseUrl);
 
     res.json({
       success: true,
