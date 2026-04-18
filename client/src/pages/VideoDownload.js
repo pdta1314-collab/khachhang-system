@@ -10,14 +10,9 @@ function VideoDownload() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [canShare, setCanShare] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     fetchCustomer();
-    // Kiểm tra Web Share API sau khi mount
-    setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
-    setIsIOS(typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent));
   }, [uniqueId]);
 
   const fetchCustomer = async () => {
@@ -200,9 +195,9 @@ function VideoDownload() {
               <strong>✅ Video đã sẵn sàng để tải xuống</strong>
             </div>
 
-            {/* Nút Tải về - hỗ trợ cả Android và iOS */}
+            {/* Nút Tải về - thực chất là Share để iOS có thể lưu vào Photos */}
             <button 
-              onClick={handleDownload}
+              onClick={handleShare}
               disabled={isDownloading}
               style={{
                 width: '100%',
@@ -213,54 +208,23 @@ function VideoDownload() {
                 borderRadius: '8px',
                 fontSize: '16px',
                 fontWeight: 'bold',
-                cursor: isDownloading ? 'not-allowed' : 'pointer',
-                marginBottom: '12px'
+                cursor: isDownloading ? 'not-allowed' : 'pointer'
               }}
             >
               {isDownloading ? 'Đang tải...' : '📥 Tải video về máy'}
             </button>
 
-            {/* Nút Chia sẻ - chỉ hiện trên mobile hỗ trợ Web Share API */}
-            {canShare && (
-              <button 
-                onClick={handleShare}
-                disabled={isDownloading}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  backgroundColor: '#10b981',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  cursor: isDownloading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                📤 Chia sẻ video
-              </button>
-            )}
-
-            {/* Hướng dẫn cho iOS */}
-            {isIOS && (
-              <div style={{ 
-                marginTop: '12px', 
-                padding: '12px', 
-                backgroundColor: '#e3f2fd', 
-                borderRadius: '8px', 
-                fontSize: '12px',
-                color: '#1565c0'
-              }}>
-                <strong>Hướng dẫn iOS:</strong> Bấm tải về, sau đó dùng app "Files" để xem video.
-                <strong>💡 Hướng dẫn lưu video trên iPhone/iPad:</strong>
-                <ol style={{ marginTop: '8px', paddingLeft: '16px' }}>
-                  <li>Bấm "Tải video về máy"</li>
-                  <li>Video sẽ mở trong tab mới</li>
-                  <li>Bấm nút Share (⬆️) dưới video</li>
-                  <li>Chọn "Lưu vào Files" hoặc "Lưu Video"</li>
-                </ol>
-              </div>
-            )}
+            {/* Hướng dẫn */}
+            <div style={{ 
+              marginTop: '12px', 
+              padding: '12px', 
+              backgroundColor: '#e3f2fd', 
+              borderRadius: '8px', 
+              fontSize: '12px',
+              color: '#1565c0'
+            }}>
+              <strong>Hướng dẫn:</strong> Bấm nút tải về, sau đó chọn "Save to Photos" hoặc "Lưu Video" để lưu vào thư viện ảnh.
+            </div>
 
           </div>
         ) : (
