@@ -214,13 +214,21 @@ function VideoDownload() {
             {/* Hướng dẫn */}
             <div style={{ 
               marginTop: '12px', 
-              padding: '12px', 
+              padding: '16px', 
               backgroundColor: '#e3f2fd', 
               borderRadius: '8px', 
-              fontSize: '12px',
-              color: '#1565c0'
+              fontSize: '13px',
+              color: '#1565c0',
+              lineHeight: '1.6'
             }}>
-              <strong>Hướng dẫn:</strong> Bấm "Tải video về máy" để mở video, sau đó dùng nút tải của trình duyệt. Bấm "Chia sẻ video" để gửi link cho người khác.
+              <strong style={{ fontSize: '14px', marginBottom: '8px', display: 'block' }}>📱 Hướng dẫn tải video:</strong>
+              <ol style={{ marginTop: '8px', paddingLeft: '20px', marginBottom: '8px' }}>
+                <li style={{ marginBottom: '6px' }}>Bấm nút <strong>"📥 Tải video về máy"</strong></li>
+                <li style={{ marginBottom: '6px' }}>Video sẽ mở trong tab mới</li>
+                <li style={{ marginBottom: '6px' }}>Trên trình duyệt, bấm nút <strong>Tải xuống</strong> hoặc <strong>Download</strong></li>
+                <li style={{ marginBottom: '6px' }}>Chọn vị trí lưu video trên điện thoại/máy tính</li>
+              </ol>
+              <p style={{ marginTop: '8px', marginBottom: '4px' }}><strong>💡 Chia sẻ video:</strong> Bấm nút <strong>"📤 Chia sẻ video"</strong> để gửi link cho bạn bè hoặc người thân.</p>
             </div>
 
           </div>
