@@ -904,8 +904,8 @@ function AdminDashboard() {
 
       {/* Modal Xem chi tiết khách hàng */}
       {viewCustomer && (
-        <div className="modal" style={{ display: 'flex' }} onClick={() => setViewCustomer(null)}>
-          <div className="modal-content" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: '1000' }} onClick={() => setViewCustomer(null)}>
+          <div className="modal-content" style={{ maxWidth: '500px', margin: 'auto', backgroundColor: 'white', borderRadius: '12px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Thông tin khách hàng #{viewCustomer.id}</h3>
               <button className="close-btn" onClick={() => setViewCustomer(null)}>&times;</button>
@@ -936,7 +936,7 @@ function AdminDashboard() {
                     left: '0',
                     width: '200px',
                     height: '200px',
-                    opacity: '0.25',
+                    opacity: '0.4',
                     zIndex: '1',
                     display: 'flex',
                     alignItems: 'center',

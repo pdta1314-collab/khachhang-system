@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API_URL = '/api';
 
 function VideoDownload() {
   const { uniqueId } = useParams();
+  const { language, toggleLanguage, t } = useLanguage();
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -148,26 +150,26 @@ function VideoDownload() {
 
       <div style={{ width: '100%', maxWidth: '500px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '22px' }}>
-          Trang tải Video
+          {t('videoDownloadPage')}
         </h1>
 
         <div style={{ marginBottom: '24px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
           <p style={{ marginBottom: '12px' }}>
-            <strong>Họ tên:</strong> {customer?.name}
+            <strong>{t('fullNameLabel')}:</strong> {customer?.name}
           </p>
           <p style={{ marginBottom: '12px' }}>
-            <strong>Số điện thoại:</strong> {customer?.phone}
+            <strong>{t('phoneLabel')}:</strong> {customer?.phone}
           </p>
           {customer?.email && (
             <p style={{ marginBottom: '12px' }}>
-              <strong>Email:</strong> {customer.email}
+              <strong>{t('emailLabel')}:</strong> {customer.email}
             </p>
           )}
           <p style={{ fontSize: '14px', color: '#666' }}>
-            <strong>Ngày đăng ký:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleDateString('vi-VN')}
+            <strong>{t('registrationDate')}:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')}
           </p>
           <p style={{ fontSize: '14px', color: '#666' }}>
-            <strong>Giờ đăng ký:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleTimeString('vi-VN')}
+            <strong>{t('registrationTime')}:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleTimeString(language === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
 
@@ -184,7 +186,7 @@ function VideoDownload() {
               color: '#155724',
               textAlign: 'center'
             }}>
-              <strong>✅ Video đã sẵn sàng để tải xuống</strong>
+              <strong>{t('videoAvailable')}</strong>
             </div>
 
             {/* Nút Tải về - mở video trong tab mới */}
@@ -204,7 +206,7 @@ function VideoDownload() {
                 marginBottom: '12px'
               }}
             >
-              {isDownloading ? 'Đang tải...' : '📥 Tải video về máy'}
+              {isDownloading ? t('downloading') : '📥 ' + t('downloadVideo')}
             </button>
 
             {/* Nút Chia sẻ - chia sẻ link video */}
@@ -223,7 +225,7 @@ function VideoDownload() {
                 cursor: isDownloading ? 'not-allowed' : 'pointer'
               }}
             >
-              📤 Chia sẻ video
+              📤 {t('shareVideo')}
             </button>
 
             {/* Hướng dẫn */}
@@ -236,32 +238,43 @@ function VideoDownload() {
               color: '#1565c0',
               lineHeight: '1.6'
             }}>
-              <strong style={{ fontSize: '14px', marginBottom: '8px', display: 'block' }}>📱 Hướng dẫn tải video:</strong>
+              <strong style={{ fontSize: '14px', marginBottom: '8px', display: 'block' }}>{t('downloadInstructions')}</strong>
               <ol style={{ marginTop: '8px', paddingLeft: '20px', marginBottom: '8px' }}>
-                <li style={{ marginBottom: '6px' }}>Bấm nút <strong>"📥 Tải video về máy"</strong></li>
-                <li style={{ marginBottom: '6px' }}>Video sẽ mở trong tab mới</li>
-                <li style={{ marginBottom: '6px' }}>Trên trình duyệt, bấm nút <strong>Tải xuống</strong> hoặc <strong>Download</strong></li>
-                <li style={{ marginBottom: '6px' }}>Chọn vị trí lưu video trên điện thoại/máy tính</li>
+                <li style={{ marginBottom: '6px' }}>{t('step1')}</li>
+                <li style={{ marginBottom: '6px' }}>{t('step2')}</li>
+                <li style={{ marginBottom: '6px' }}>{t('step3')}</li>
+                <li style={{ marginBottom: '6px' }}>{t('step4')}</li>
               </ol>
-              <p style={{ marginTop: '8px', marginBottom: '4px' }}><strong>💡 Chia sẻ video:</strong> Bấm nút <strong>"📤 Chia sẻ video"</strong> để gửi link cho bạn bè hoặc người thân.</p>
+              <p style={{ marginTop: '8px', marginBottom: '4px' }}>{t('shareHint')}</p>
             </div>
 
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '30px', background: '#fff3cd', borderRadius: '8px' }}>
             <p style={{ marginBottom: '12px', fontSize: '18px', fontWeight: '500' }}>
-              Video chưa sẵn sàng
+              {t('videoNotReady')}
             </p>
             <p style={{ color: '#666' }}>
-              Video của bạn đang được xử lý. Vui lòng quay lại sau hoặc liên hệ ban tổ chức sự kiện.
+              {t('videoProcessing')}
             </p>
           </div>
         )}
 
         <div style={{ marginTop: '30px', textAlign: 'center' }}>
           <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>
-            Quay về trang chủ
+            {t('backToHome')}
           </a>
+        </div>
+
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <button 
+            onClick={toggleLanguage}
+            className="btn btn-secondary"
+            style={{ padding: '12px 24px' }}
+            title={t('language')}
+          >
+            {language === 'vi' ? '🇻🇳 VN' : '🇬🇧 EN'}
+          </button>
         </div>
       </div>
     </div>
