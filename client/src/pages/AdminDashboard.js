@@ -469,7 +469,22 @@ function AdminDashboard() {
         </button>
       </div>
 
-      <div className="card" style={{ marginTop: '60px' }}>
+      {/* Logo làm tiêu đề trang - nằm trên đầu và căn giữa */}
+      <div style={{ textAlign: 'center', marginBottom: '20px', marginTop: '40px' }}>
+        <img
+          src="/logo.png"
+          alt="Logo"
+          style={{
+            width: '100%',
+            maxWidth: '1200px',
+            height: 'auto',
+            objectFit: 'contain',
+            borderRadius: '12px'
+          }}
+        />
+      </div>
+
+      <div className="card" style={{ marginTop: '20px' }}>
         <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div>
             <h1 className="admin-title" style={{ marginBottom: '8px' }}>Quản lý Khách hàng</h1>
@@ -908,13 +923,32 @@ function AdminDashboard() {
               {/* QR Code */}
               <div style={{ marginBottom: '20px' }}>
                 <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>Mã QR để tải video</p>
-                <QRCodeSVG 
-                  value={`${window.location.origin}/video/${viewCustomer.uniqueId}`}
-                  size={200}
-                  style={{ margin: '0 auto', display: 'block' }}
-                  level="H"
-                  includeMargin={true}
-                />
+                <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto' }}>
+                  <QRCodeSVG 
+                    value={`${window.location.origin}/video/${viewCustomer.uniqueId}`}
+                    size={200}
+                    style={{ display: 'block' }}
+                    level="H"
+                    includeMargin={true}
+                  />
+                  {/* Logo ở giữa QR code */}
+                  <img
+                    src="/logo.png"
+                    alt="Logo"
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '40px',
+                      height: '40px',
+                      objectFit: 'contain',
+                      backgroundColor: 'white',
+                      padding: '2px',
+                      borderRadius: '4px'
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Thông tin chi tiết */}

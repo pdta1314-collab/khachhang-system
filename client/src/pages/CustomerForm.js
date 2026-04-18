@@ -63,20 +63,21 @@ function CustomerForm() {
   return (
     <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '20px' }}>
       {/* Logo làm tiêu đề trang - nằm ngoài card */}
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img
           src="/logo.png"
           alt="Logo"
           style={{
-            width: '300px',
+            width: '400px',
             height: 'auto',
             objectFit: 'contain',
-            maxWidth: '100%'
+            maxWidth: '100%',
+            borderRadius: '12px'
           }}
         />
       </div>
 
-      <div className="card" style={{ width: '100%', maxWidth: '500px', padding: '30px' }}>
+      <div style={{ width: '100%', maxWidth: '500px' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '24px' }}>
@@ -163,12 +164,31 @@ function CustomerForm() {
             </div>
 
             <div className="qr-code" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <QRCodeSVG 
-                value={customerData?.downloadUrl || ''} 
-                size={200}
-                level="H"
-                includeMargin={true}
-              />
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <QRCodeSVG 
+                  value={customerData?.downloadUrl || ''} 
+                  size={200}
+                  level="H"
+                  includeMargin={true}
+                />
+                {/* Logo ở giữa QR code */}
+                <img
+                  src="/logo.png"
+                  alt="Logo"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '40px',
+                    height: '40px',
+                    objectFit: 'contain',
+                    backgroundColor: 'white',
+                    padding: '2px',
+                    borderRadius: '4px'
+                  }}
+                />
+              </div>
             </div>
 
             {/* Hiển thị ID lớn */}
