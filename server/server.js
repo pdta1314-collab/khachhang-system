@@ -22,76 +22,19 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const fs = require('fs');
-
-// Route cho video streaming - xử lý tất cả path trong uploads/ (đặt TRƯỚC static middleware)
-// Dùng regex cho Express 5.x
-app.get(/^\/uploads\/(.+)$/, (req, res, next) => {
-  const filePath = path.join(__dirname, 'uploads', req.params[0]);
-  
-  // Chỉ xử lý nếu là file video
-  const ext = path.extname(filePath).toLowerCase();
-  const videoExts = ['.mp4', '.webm', '.mov', '.mkv', '.avi'];
-  
-  if (videoExts.includes(ext)) {
-    // Kiểm tra file tồn tại
-    if (!fs.existsSync(filePath)) {
-      console.error('Video file not found:', filePath);
-      return res.status(404).json({ error: 'Video không tồn tại: ' + req.params[0] });
+// Static files cho uploads với MIME type đúng cho video
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res, filePath) => {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.mp4') {
+      res.setHeader('Content-Type', 'video/mp4');
+    } else if (ext === '.webm') {
+      res.setHeader('Content-Type', 'video/webm');
+    } else if (ext === '.mov') {
+      res.setHeader('Content-Type', 'video/quicktime');
     }
-    
-    const stat = fs.statSync(filePath);
-    const fileSize = stat.size;
-    const range = req.headers.range;
-    
-    // Xác định content type
-    const mimeTypes = {
-      '.mp4': 'video/mp4',
-      '.webm': 'video/webm',
-      '.mov': 'video/quicktime',
-      '.mkv': 'video/x-matroska',
-      '.avi': 'video/x-msvideo'
-    };
-    const contentType = mimeTypes[ext] || 'video/mp4';
-    
-    console.log('Serving video:', filePath, 'Size:', fileSize, 'Type:', contentType);
-    
-    if (range) {
-      // Streaming với range request
-      const parts = range.replace(/bytes=/, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-      const chunksize = (end - start) + 1;
-      const file = fs.createReadStream(filePath, { start, end });
-      
-      const head = {
-        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': chunksize,
-        'Content-Type': contentType,
-      };
-      
-      res.writeHead(206, head);
-      file.pipe(res);
-    } else {
-      // Gửi toàn bộ file
-      const head = {
-        'Content-Length': fileSize,
-        'Content-Type': contentType,
-        'Accept-Ranges': 'bytes'
-      };
-      
-      res.writeHead(200, head);
-      fs.createReadStream(filePath).pipe(res);
-    }
-  } else {
-    // Không phải video, chuyển sang static middleware
-    next();
   }
-});
-
-// Static files cho uploads (đặt SAU video route)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+}));
 
 // Import routes
 const customerRoutes = require('./routes/customers');
