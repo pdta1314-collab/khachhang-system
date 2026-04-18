@@ -117,7 +117,7 @@ exports.getCustomer = async (req, res) => {
     }
 
     const baseUrl = BASE_URL;
-    const videoUrl = customer.video_path ? `${baseUrl}/uploads/${path.basename(customer.video_path)}` : null;
+    const videoUrl = customer.video_path ? `${baseUrl}/${customer.video_path}` : null;
 
     res.json({
       success: true,
@@ -151,7 +151,7 @@ exports.getCustomerByUniqueId = async (req, res) => {
     }
 
     const baseUrl = BASE_URL;
-    const videoUrl = customer.video_path ? `${baseUrl}/uploads/${path.basename(customer.video_path)}` : null;
+    const videoUrl = customer.video_path ? `${baseUrl}/${customer.video_path}` : null;
 
     res.json({
       success: true,

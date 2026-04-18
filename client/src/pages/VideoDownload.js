@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -9,6 +9,8 @@ function VideoDownload() {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     fetchCustomer();
@@ -33,15 +35,72 @@ function VideoDownload() {
     }
   };
 
-  const handleDownload = () => {
-    if (customer?.videoUrl) {
+  const handleDownload = async () => {
+    if (!customer?.videoUrl) return;
+    
+    setIsDownloading(true);
+    
+    try {
+      // Tải video dưới dạng blob để hỗ trợ tốt trên mobile
+      const response = await fetch(customer.videoUrl);
+      const blob = await response.blob();
+      
+      // Tạo URL từ blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Tạo link tải
       const link = document.createElement('a');
-      link.href = customer.videoUrl;
-      link.download = `video-${customer.name}.mp4`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      link.href = blobUrl;
+      link.download = `video-${customer.name}-${customer.id}.mp4`;
+      
+      // Đối với iOS Safari, cần mở trong tab mới
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        // iOS: Mở video trong tab mới để người dùng có thể "Share" → "Save to Files"
+        window.open(customer.videoUrl, '_blank');
+      } else {
+        // Android và desktop: Tải trực tiếp
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      // Cleanup
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+      
+    } catch (err) {
+      console.error('Download error:', err);
+      // Fallback: Mở video trong tab mới nếu download thất bại
+      window.open(customer.videoUrl, '_blank');
+    } finally {
+      setIsDownloading(false);
     }
+  };
+
+  const handleShare = async () => {
+    if (!customer?.videoUrl) return;
+    
+    // Sử dụng Web Share API nếu có (tốt cho mobile)
+    if (navigator.share && navigator.canShare) {
+      try {
+        const response = await fetch(customer.videoUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `video-${customer.name}.mp4`, { type: 'video/mp4' });
+        
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `Video của ${customer.name}`,
+            text: 'Video từ sự kiện',
+            files: [file]
+          });
+          return;
+        }
+      } catch (err) {
+        console.log('Share failed, falling back to download');
+      }
+    }
+    
+    // Fallback: Download
+    handleDownload();
   };
 
   if (loading) {
@@ -82,32 +141,111 @@ function VideoDownload() {
             <strong>Họ tên:</strong> {customer?.name}
           </p>
           <p style={{ marginBottom: '12px' }}>
-            <strong>Trang phục:</strong> {customer?.outfit}
+            <strong>Số điện thoại:</strong> {customer?.phone}
           </p>
+          {customer?.email && (
+            <p style={{ marginBottom: '12px' }}>
+              <strong>Email:</strong> {customer.email}
+            </p>
+          )}
           <p style={{ fontSize: '14px', color: '#666' }}>
-            <strong>Ngày đăng ký:</strong> {new Date(customer?.createdAt).toLocaleDateString('vi-VN')}
+            <strong>Ngày đăng ký:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleDateString('vi-VN')}
           </p>
         </div>
 
         {customer?.hasVideo ? (
           <div>
-            <div style={{ marginBottom: '20px' }}>
+            {/* Video Player với controls đầy đủ cho mobile */}
+            <div style={{ marginBottom: '20px', position: 'relative' }}>
               <video 
+                ref={videoRef}
                 controls 
-                style={{ width: '100%', borderRadius: '8px', maxHeight: '300px' }}
+                controlsList="nodownload"
+                playsInline
+                preload="metadata"
+                style={{ 
+                  width: '100%', 
+                  borderRadius: '8px', 
+                  maxHeight: '400px',
+                  backgroundColor: '#000'
+                }}
                 src={customer?.videoUrl}
+                onError={(e) => {
+                  console.error('Video error:', e);
+                  setError('Không thể tải video. Vui lòng thử tải về máy.');
+                }}
               >
+                <source src={customer?.videoUrl} type="video/mp4" />
                 Trình duyệt của bạn không hỗ trợ video.
               </video>
             </div>
 
+            {/* Nút Tải về - hỗ trợ cả Android và iOS */}
             <button 
               onClick={handleDownload}
+              disabled={isDownloading}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '16px', fontSize: '18px', marginBottom: '12px' }}
+              style={{ 
+                width: '100%', 
+                padding: '16px', 
+                fontSize: '18px', 
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
             >
-              Tải video về máy
+              {isDownloading ? (
+                <>
+                  <span>⏳</span> Đang tải...
+                </>
+              ) : (
+                <>
+                  <span>⬇️</span> Tải video về máy
+                </>
+              )}
             </button>
+
+            {/* Nút Chia sẻ - chỉ hiện nếu Web Share API hỗ trợ */}
+            {navigator.share && (
+              <button 
+                onClick={handleShare}
+                className="btn btn-secondary"
+                style={{ 
+                  width: '100%', 
+                  padding: '14px', 
+                  fontSize: '16px', 
+                  marginBottom: '12px',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <span>📤</span> Chia sẻ video
+              </button>
+            )}
+
+            {/* Hướng dẫn cho iOS */}
+            {/iPad|iPhone|iPod/.test(navigator.userAgent) && (
+              <div style={{ 
+                padding: '12px', 
+                background: '#e7f3ff', 
+                borderRadius: '8px', 
+                marginBottom: '12px',
+                fontSize: '13px'
+              }}>
+                <strong>💡 Hướng dẫn lưu video trên iPhone/iPad:</strong>
+                <ol style={{ marginTop: '8px', paddingLeft: '16px' }}>
+                  <li>Bấm "Tải video về máy"</li>
+                  <li>Video sẽ mở trong tab mới</li>
+                  <li>Bấm nút Share (⬆️) dưới video</li>
+                  <li>Chọn "Lưu vào Files" hoặc "Lưu Video"</li>
+                </ol>
+              </div>
+            )}
 
             <p style={{ textAlign: 'center', fontSize: '14px', color: '#666' }}>
               Video có thể xem trực tiếp hoặc tải về để lưu trữ
