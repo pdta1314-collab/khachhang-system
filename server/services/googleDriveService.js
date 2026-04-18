@@ -1,24 +1,10 @@
-const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios');
 
-// Khởi tạo Google Drive API
-const getDriveClient = () => {
-  let credentials;
-  
-  // Đọc credentials từ biến môi trường
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
-  } else {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY không được cấu hình');
-  }
-
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-  });
-
-  return google.drive({ version: 'v3', auth });
+// Lấy API Key từ biến môi trường
+const getApiKey = () => {
+  return process.env.GOOGLE_DRIVE_API_KEY;
 };
 
 // Lấy folder ID từ biến môi trường
@@ -26,31 +12,42 @@ const getFolderId = () => {
   return process.env.GOOGLE_DRIVE_FOLDER_ID;
 };
 
-// Lấy danh sách video từ folder
+// Lấy danh sách video từ folder public
 const getVideosFromFolder = async () => {
-  const drive = getDriveClient();
+  const apiKey = getApiKey();
   const folderId = getFolderId();
+
+  if (!apiKey) {
+    throw new Error('GOOGLE_DRIVE_API_KEY không được cấu hình');
+  }
 
   if (!folderId) {
     throw new Error('GOOGLE_DRIVE_FOLDER_ID không được cấu hình');
   }
 
-  const response = await drive.files.list({
-    q: `'${folderId}' in parents and mimeType contains 'video/' and trashed = false`,
-    fields: 'files(id, name, mimeType, size)',
-  });
-
+  // Gọi API để lấy danh sách files trong folder
+  const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'video/'+and+trashed=false&key=${apiKey}&fields=files(id,name,mimeType,size,webContentLink)`;
+  
+  const response = await axios.get(url);
   return response.data.files || [];
 };
 
-// Download file từ Google Drive
+// Download file từ Google Drive (public file)
 const downloadFile = async (fileId, destinationPath) => {
-  const drive = getDriveClient();
+  const apiKey = getApiKey();
+  
+  if (!apiKey) {
+    throw new Error('GOOGLE_DRIVE_API_KEY không được cấu hình');
+  }
 
-  const response = await drive.files.get(
-    { fileId, alt: 'media' },
-    { responseType: 'stream' }
-  );
+  // Gọi API để download file
+  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+  
+  const response = await axios({
+    method: 'get',
+    url: url,
+    responseType: 'stream',
+  });
 
   return new Promise((resolve, reject) => {
     const dest = fs.createWriteStream(destinationPath);
