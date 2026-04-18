@@ -51,6 +51,7 @@ function VideoDownload() {
       console.log('Downloading video from:', customer.videoUrl);
       // Mở video trong tab mới - cách đơn giản và hoạt động tốt nhất
       window.open(customer.videoUrl, '_blank');
+      alert('Video đã mở trong tab mới. Bạn có thể tải xuống từ trình duyệt.');
     } catch (err) {
       console.error('Download error:', err);
       alert('Lỗi khi tải video: ' + err.message);
@@ -73,65 +74,30 @@ function VideoDownload() {
     setIsDownloading(true);
     
     try {
-      // Try URL sharing first (most reliable)
+      // Use Web Share API with URL (most reliable)
       if (typeof navigator !== 'undefined' && navigator.share) {
-        try {
-          await navigator.share({
-            title: `Video của ${customer.name}`,
-            text: `Video của ${customer.name} - tải tại: ${customer.videoUrl}`,
-            url: customer.videoUrl
-          });
-          console.log('URL share successful');
-          return;
-        } catch (urlShareErr) {
-          console.log('URL share failed, trying blob share:', urlShareErr);
-        }
+        await navigator.share({
+          title: `Video của ${customer.name}`,
+          text: `Video của ${customer.name} - tải tại: ${customer.videoUrl}`,
+          url: customer.videoUrl
+        });
+        console.log('Share successful');
+        return;
+      } else {
+        // Fallback: Copy link to clipboard
+        await navigator.clipboard.writeText(customer.videoUrl);
+        alert('Đã copy link video! Bạn có thể gửi link này cho người khác.');
       }
-      
-      // Try blob sharing for iOS Photos
-      try {
-        console.log('Fetching video blob...');
-        const response = await fetch(customer.videoUrl);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        const blob = await response.blob();
-        console.log('Blob fetched, size:', blob.size);
-        
-        // Create file from blob
-        const file = new File([blob], `video-${customer.name}.mp4`, { type: 'video/mp4' });
-        console.log('File created:', file.name);
-        
-        // Use Web Share API with file (supports iOS Photos)
-        if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
-          try {
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                title: `Video của ${customer.name}`,
-                text: 'Video từ sự kiện',
-                files: [file]
-              });
-              console.log('File share successful');
-              return;
-            }
-          } catch (shareErr) {
-            console.log('File share failed:', shareErr);
-          }
-        }
-      } catch (blobErr) {
-        console.log('Blob fetch failed:', blobErr);
-      }
-      
-      // Fallback: Open video in new tab
-      console.log('Opening video in new tab as fallback');
-      window.open(customer.videoUrl, '_blank');
-      alert('Video đã mở trong tab mới. Vui lòng dùng nút Share của trình duyệt để lưu vào Photos.');
-      
     } catch (err) {
       console.error('Share error:', err);
-      alert('Lỗi khi chia sẻ: ' + err.message);
-      // Final fallback: Open in new tab
-      window.open(customer.videoUrl, '_blank');
+      // Fallback: Copy link
+      try {
+        await navigator.clipboard.writeText(customer.videoUrl);
+        alert('Đã copy link video! Bạn có thể gửi link này cho người khác.');
+      } catch (copyErr) {
+        console.error('Copy failed:', copyErr);
+        alert('Không thể chia sẻ. Vui lòng copy link từ trình duyệt.');
+      }
     } finally {
       setIsDownloading(false);
     }
@@ -206,9 +172,9 @@ function VideoDownload() {
               <strong>✅ Video đã sẵn sàng để tải xuống</strong>
             </div>
 
-            {/* Nút Tải về - thực chất là Share để iOS có thể lưu vào Photos */}
+            {/* Nút Tải về - mở video trong tab mới */}
             <button 
-              onClick={handleShare}
+              onClick={handleDownload}
               disabled={isDownloading}
               style={{
                 width: '100%',
@@ -219,10 +185,30 @@ function VideoDownload() {
                 borderRadius: '8px',
                 fontSize: '16px',
                 fontWeight: 'bold',
-                cursor: isDownloading ? 'not-allowed' : 'pointer'
+                cursor: isDownloading ? 'not-allowed' : 'pointer',
+                marginBottom: '12px'
               }}
             >
               {isDownloading ? 'Đang tải...' : '📥 Tải video về máy'}
+            </button>
+
+            {/* Nút Chia sẻ - chia sẻ link video */}
+            <button 
+              onClick={handleShare}
+              disabled={isDownloading}
+              style={{
+                width: '100%',
+                padding: '14px',
+                backgroundColor: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: isDownloading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              📤 Chia sẻ video
             </button>
 
             {/* Hướng dẫn */}
@@ -234,7 +220,7 @@ function VideoDownload() {
               fontSize: '12px',
               color: '#1565c0'
             }}>
-              <strong>Hướng dẫn:</strong> Bấm nút tải về, sau đó chọn "Save to Photos" hoặc "Lưu Video" để lưu vào thư viện ảnh.
+              <strong>Hướng dẫn:</strong> Bấm "Tải video về máy" để mở video, sau đó dùng nút tải của trình duyệt. Bấm "Chia sẻ video" để gửi link cho người khác.
             </div>
 
           </div>
