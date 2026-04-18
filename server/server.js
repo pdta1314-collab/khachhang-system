@@ -25,8 +25,9 @@ app.use(express.urlencoded({ extended: true }));
 const fs = require('fs');
 
 // Route cho video streaming - xử lý tất cả path trong uploads/ (đặt TRƯỚC static middleware)
-app.get('/uploads/:path(*)', (req, res, next) => {
-  const filePath = path.join(__dirname, 'uploads', req.params.path);
+// Dùng regex cho Express 5.x
+app.get(/^\/uploads\/(.+)$/, (req, res, next) => {
+  const filePath = path.join(__dirname, 'uploads', req.params[0]);
   
   // Chỉ xử lý nếu là file video
   const ext = path.extname(filePath).toLowerCase();
@@ -36,7 +37,7 @@ app.get('/uploads/:path(*)', (req, res, next) => {
     // Kiểm tra file tồn tại
     if (!fs.existsSync(filePath)) {
       console.error('Video file not found:', filePath);
-      return res.status(404).json({ error: 'Video không tồn tại: ' + req.params.path });
+      return res.status(404).json({ error: 'Video không tồn tại: ' + req.params[0] });
     }
     
     const stat = fs.statSync(filePath);
