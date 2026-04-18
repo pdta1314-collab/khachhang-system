@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API_URL = '/api';
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const { language, toggleLanguage, t } = useLanguage();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -462,10 +464,13 @@ function AdminDashboard() {
         </button>
       </div>
 
-      {/* Nút Đăng xuất - góc phải */}
-      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+      {/* Nút Đăng xuất và Chuyển ngôn ngữ - góc phải */}
+      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000, display: 'flex', gap: '8px' }}>
+        <button onClick={toggleLanguage} className="btn btn-secondary" title={t('language')}>
+          {language === 'vi' ? '🇻🇳 VN' : '🇬🇧 EN'}
+        </button>
         <button onClick={handleLogout} className="btn btn-secondary">
-          Đăng xuất
+          {t('logout')}
         </button>
       </div>
 
@@ -923,22 +928,30 @@ function AdminDashboard() {
               {/* QR Code */}
               <div style={{ marginBottom: '20px' }}>
                 <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>Mã QR để tải video</p>
-                <div style={{ position: 'relative', display: 'inline-block', width: '200px', height: '200px' }}>
-                  {/* Logo mờ phía sau QR code */}
-                  <img
-                    src="/logo.png"
-                    alt="Logo"
-                    style={{
-                      position: 'absolute',
-                      top: '0',
-                      left: '0',
-                      width: '200px',
-                      height: '200px',
-                      objectFit: 'contain',
-                      opacity: '0.15',
-                      zIndex: '1'
-                    }}
-                  />
+                <div style={{ position: 'relative', width: '200px', height: '200px', margin: '0 auto' }}>
+                  {/* Logo mờ phía sau QR code - căn bằng và phủ đầy */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '200px',
+                    height: '200px',
+                    opacity: '0.12',
+                    zIndex: '1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <img
+                      src="/logo.png"
+                      alt="Logo"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </div>
                   <div style={{ position: 'relative', zIndex: '2' }}>
                     <QRCodeSVG 
                       value={`${window.location.origin}/video/${viewCustomer.uniqueId}`}

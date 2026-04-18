@@ -77,7 +77,7 @@ function CustomerForm() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '450px', backgroundColor: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <div style={{ width: '100%', maxWidth: '500px' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>
@@ -164,22 +164,30 @@ function CustomerForm() {
             </div>
 
             <div className="qr-code" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <div style={{ position: 'relative', display: 'inline-block', width: '200px', height: '200px' }}>
-                {/* Logo mờ phía sau QR code */}
-                <img
-                  src="/logo.png"
-                  alt="Logo"
-                  style={{
-                    position: 'absolute',
-                    top: '0',
-                    left: '0',
-                    width: '200px',
-                    height: '200px',
-                    objectFit: 'contain',
-                    opacity: '0.15',
-                    zIndex: '1'
-                  }}
-                />
+              <div style={{ position: 'relative', width: '200px', height: '200px' }}>
+                {/* Logo mờ phía sau QR code - căn bằng và phủ đầy */}
+                <div style={{
+                  position: 'absolute',
+                  top: '0',
+                  left: '0',
+                  width: '200px',
+                  height: '200px',
+                  opacity: '0.12',
+                  zIndex: '1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <img
+                    src="/logo.png"
+                    alt="Logo"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </div>
                 <div style={{ position: 'relative', zIndex: '2' }}>
                   <QRCodeSVG 
                     value={customerData?.downloadUrl || ''} 
