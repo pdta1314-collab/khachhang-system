@@ -937,16 +937,17 @@ function AdminDashboard() {
               </div>
 
               {/* Video đã upload */}
-              {viewCustomer.video_path && (
-                <div style={{ marginBottom: '15px' }}>
-                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Video đã upload:</p>
-                  <video 
-                    controls 
-                    style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }}
-                    src={viewCustomer.videoUrl}
-                  />
-                </div>
-              )}
+              <div style={{ marginBottom: '15px' }}>
+                {viewCustomer.video_path ? (
+                  <p style={{ fontSize: '16px', color: '#28a745', fontWeight: 'bold', marginBottom: '8px' }}>
+                    ✅ Video đã upload!
+                  </p>
+                ) : (
+                  <p style={{ fontSize: '16px', color: '#dc3545', fontWeight: 'bold', marginBottom: '8px' }}>
+                    ❌ Chưa có video
+                  </p>
+                )}
+              </div>
 
               {/* Link tải video */}
               <a 

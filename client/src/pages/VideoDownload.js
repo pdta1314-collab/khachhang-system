@@ -40,8 +40,13 @@ function VideoDownload() {
   };
 
   const handleDownload = async () => {
+    console.log('handleDownload called');
+    console.log('customer:', customer);
+    console.log('videoUrl:', customer?.videoUrl);
+    
     if (!customer?.videoUrl) {
       console.error('No video URL available');
+      alert('Không tìm thấy link video. Vui lòng liên hệ ban tổ chức.');
       return;
     }
     
@@ -60,8 +65,13 @@ function VideoDownload() {
   };
 
   const handleShare = async () => {
+    console.log('handleShare called');
+    console.log('customer:', customer);
+    console.log('videoUrl:', customer?.videoUrl);
+    
     if (!customer?.videoUrl) {
       console.error('No video URL available');
+      alert('Không tìm thấy link video. Vui lòng liên hệ ban tổ chức.');
       return;
     }
     
