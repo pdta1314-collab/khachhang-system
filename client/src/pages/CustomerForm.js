@@ -2,13 +2,11 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '../contexts/LanguageContext';
 
 const API_URL = '/api';
 
 function CustomerForm() {
   const navigate = useNavigate();
-  const { language, toggleLanguage, t } = useLanguage();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -83,7 +81,7 @@ function CustomerForm() {
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-              {t('registrationTitle')}
+              NHẬP THÔNG TIN ĐĂNG KÝ
             </h1>
             
             {error && (
@@ -94,37 +92,37 @@ function CustomerForm() {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="name">{t('fullName')}</label>
+                <label htmlFor="name">Họ và tên</label>
                 <input
                   type="text"
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder={language === 'vi' ? 'Nhập họ và tên của bạn' : 'Enter your full name'}
+                  placeholder="Nhập họ và tên của bạn"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone">{t('phone')}</label>
+                <label htmlFor="phone">Số điện thoại</label>
                 <input
                   type="tel"
                   id="phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder={language === 'vi' ? 'Nhập số điện thoại của bạn' : 'Enter your phone number'}
+                  placeholder="Nhập số điện thoại của bạn"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">{t('email')}</label>
+                <label htmlFor="email">Email (không bắt buộc)</label>
                 <input
                   type="email"
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={language === 'vi' ? 'Nhập email của bạn' : 'Enter your email'}
+                  placeholder="Nhập email của bạn"
                 />
               </div>
 
@@ -137,10 +135,10 @@ function CustomerForm() {
                 {loading ? (
                   <span>
                     <span className="spinner" style={{ width: '20px', height: '20px', display: 'inline-block', marginRight: '10px' }}></span>
-                    {t('processing')}
+                    Đang xử lý...
                   </span>
                 ) : (
-                  t('submit')
+                  'Gửi thông tin'
                 )}
               </button>
 
@@ -150,7 +148,7 @@ function CustomerForm() {
                 className="btn btn-secondary"
                 style={{ width: '100%', marginTop: '10px', padding: '12px' }}
               >
-                🔐 {t('adminPage')}
+                🔐 Vào trang Admin
               </button>
             </form>
           </>
@@ -158,10 +156,10 @@ function CustomerForm() {
           <>
             <div className="success-message">
               <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>
-                {t('registrationSuccess')}
+                Đăng ký thành công!
               </h2>
               <p style={{ textAlign: 'center' }}>
-                {t('qrInstruction')}
+                Quý khách vui lòng quét mã QR bên dưới để tải video sau khi sự kiện kết thúc.
               </p>
             </div>
 
@@ -204,29 +202,29 @@ function CustomerForm() {
             {/* Hiển thị ID lớn */}
             <div style={{ marginTop: '20px', padding: '20px', background: '#667eea', borderRadius: '8px', color: 'white', textAlign: 'center' }}>
               <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>
-                {t('yourId')}
+                Số ID của bạn
               </p>
               <p style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '8px' }}>
                 {customerData?.customer?.id}
               </p>
               <p style={{ fontSize: '12px', opacity: 0.8 }}>
-                {t('rememberId')}
+                Vui lòng nhớ số ID này để nhận video
               </p>
             </div>
 
             <div style={{ marginTop: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
               <p style={{ textAlign: 'center', marginBottom: '12px' }}>
-                <strong>{t('registeredInfo')}:</strong>
+                <strong>Thông tin đã đăng ký:</strong>
               </p>
               <p style={{ textAlign: 'center', marginBottom: '8px' }}>
-                <strong>{t('name')}:</strong> {customerData?.customer?.name}
+                <strong>Họ tên:</strong> {customerData?.customer?.name}
               </p>
               <p style={{ textAlign: 'center', marginBottom: '8px' }}>
-                <strong>{t('phone')}:</strong> {customerData?.customer?.phone}
+                <strong>Số điện thoại:</strong> {customerData?.customer?.phone}
               </p>
               {customerData?.customer?.email && (
                 <p style={{ textAlign: 'center', marginBottom: '8px' }}>
-                  <strong>{t('email')}:</strong> {customerData?.customer?.email}
+                  <strong>Email:</strong> {customerData?.customer?.email}
                 </p>
               )}
               <p style={{ textAlign: 'center', fontSize: '14px', color: '#666' }}>
@@ -246,23 +244,13 @@ function CustomerForm() {
               </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
-              <button 
-                onClick={toggleLanguage}
-                className="btn btn-secondary"
-                style={{ flex: 1, padding: '12px' }}
-                title={t('language')}
-              >
-                {language === 'vi' ? '🇻🇳 VN' : '🇬🇧 EN'}
-              </button>
-              <button 
-                onClick={handleNewCustomer}
-                className="btn btn-secondary"
-                style={{ flex: 2, padding: '12px' }}
-              >
-                {t('newRegistration')}
-              </button>
-            </div>
+            <button 
+              onClick={handleNewCustomer}
+              className="btn btn-secondary"
+              style={{ width: '100%', marginTop: '20px' }}
+            >
+              Đăng ký khách hàng mới
+            </button>
           </>
         )}
       </div>

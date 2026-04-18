@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
-import { useLanguage } from '../contexts/LanguageContext';
 
 const API_URL = '/api';
 
 function AdminDashboard() {
   const navigate = useNavigate();
-  const { language, toggleLanguage, t } = useLanguage();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -464,13 +462,10 @@ function AdminDashboard() {
         </button>
       </div>
 
-      {/* Nút Đăng xuất và Chuyển ngôn ngữ - góc phải */}
-      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000, display: 'flex', gap: '8px' }}>
-        <button onClick={toggleLanguage} className="btn btn-secondary" title={t('language')}>
-          {language === 'vi' ? '🇻🇳 VN' : '🇬🇧 EN'}
-        </button>
+      {/* Nút Đăng xuất - góc phải */}
+      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
         <button onClick={handleLogout} className="btn btn-secondary">
-          {t('logout')}
+          Đăng xuất
         </button>
       </div>
 
