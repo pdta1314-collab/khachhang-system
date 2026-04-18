@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -12,7 +12,6 @@ function VideoDownload() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [canShare, setCanShare] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const videoRef = useRef(null);
 
   useEffect(() => {
     fetchCustomer();
@@ -161,99 +160,71 @@ function VideoDownload() {
 
         {customer?.hasVideo ? (
           <div>
-            {/* Video Player với controls đầy đủ cho mobile */}
-            <div style={{ marginBottom: '20px', position: 'relative' }}>
-              {/* Debug info */}
-              <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '11px', marginBottom: '8px', wordBreak: 'break-all' }}>
-                <strong>Video URL:</strong> {customer?.videoUrl || 'Không có'}
-              </div>
-              
-              <video 
-                ref={videoRef}
-                controls 
-                controlsList="nodownload"
-                playsInline
-                preload="metadata"
-                style={{ 
-                  width: '100%', 
-                  borderRadius: '8px', 
-                  maxHeight: '400px',
-                  backgroundColor: '#000'
-                }}
-                src={customer?.videoUrl}
-                onError={(e) => {
-                  console.error('Video error event:', e);
-                  console.error('Video error details:', e.target?.error);
-                  console.error('Video src:', e.target?.src);
-                  setError(`Lỗi tải video: ${e.target?.error?.message || 'Không xác định'}. Thử tải về máy.`);
-                }}
-                onLoadedMetadata={(e) => {
-                  console.log('Video loaded successfully:', e.target.src);
-                  console.log('Video duration:', e.target.duration);
-                }}
-              >
-                <source src={customer?.videoUrl} type="video/mp4" />
-                Trình duyệt của bạn không hỗ trợ video.
-              </video>
+            {/* Thông báo - video không xem được online do codec */}
+            <div style={{ 
+              padding: '16px', 
+              backgroundColor: '#fff3cd', 
+              border: '1px solid #ffc107', 
+              borderRadius: '8px', 
+              marginBottom: '16px',
+              fontSize: '14px',
+              color: '#856404'
+            }}>
+              <strong>⚠️ Lưu ý:</strong> Video không xem được online do định dạng codec. Vui lòng tải về máy để xem.
             </div>
 
             {/* Nút Tải về - hỗ trợ cả Android và iOS */}
             <button 
               onClick={handleDownload}
               disabled={isDownloading}
-              className="btn btn-primary"
-              style={{ 
-                width: '100%', 
-                padding: '16px', 
-                fontSize: '18px', 
-                marginBottom: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
+              style={{
+                width: '100%',
+                padding: '14px',
+                backgroundColor: isDownloading ? '#ccc' : '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: isDownloading ? 'not-allowed' : 'pointer',
+                marginBottom: '12px'
               }}
             >
-              {isDownloading ? (
-                <>
-                  <span>⏳</span> Đang tải...
-                </>
-              ) : (
-                <>
-                  <span>⬇️</span> Tải video về máy
-                </>
-              )}
+              {isDownloading ? 'Đang tải...' : '📥 Tải video về máy'}
             </button>
 
-            {/* Nút Chia sẻ - chỉ hiện nếu Web Share API hỗ trợ */}
+            {/* Nút Chia sẻ - chỉ hiện trên mobile hỗ trợ Web Share API */}
             {canShare && (
               <button 
                 onClick={handleShare}
-                className="btn btn-secondary"
-                style={{ 
-                  width: '100%', 
-                  padding: '14px', 
-                  fontSize: '16px', 
-                  marginBottom: '12px',
-                  backgroundColor: '#28a745',
+                disabled={isDownloading}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  backgroundColor: '#10b981',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
-                  cursor: 'pointer'
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: isDownloading ? 'not-allowed' : 'pointer'
                 }}
               >
-                <span>📤</span> Chia sẻ video
+                📤 Chia sẻ video
               </button>
             )}
 
             {/* Hướng dẫn cho iOS */}
             {isIOS && (
               <div style={{ 
+                marginTop: '12px', 
                 padding: '12px', 
-                background: '#e7f3ff', 
+                backgroundColor: '#e3f2fd', 
                 borderRadius: '8px', 
-                marginBottom: '12px',
-                fontSize: '13px'
+                fontSize: '12px',
+                color: '#1565c0'
               }}>
+                <strong>Hướng dẫn iOS:</strong> Bấm tải về, sau đó dùng app "Files" để xem video.
                 <strong>💡 Hướng dẫn lưu video trên iPhone/iPad:</strong>
                 <ol style={{ marginTop: '8px', paddingLeft: '16px' }}>
                   <li>Bấm "Tải video về máy"</li>
