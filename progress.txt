@@ -1,0 +1,64 @@
+=== PROGRESS - Ngày 17/04/2026 ===
+
+== ĐÃ HOÀN THÀNH ==
+
+1. Thêm link vào admin từ trang đăng ký và ngược lại
+   - Nút "🔐 Vào trang Admin" trong CustomerForm
+   - Nút "↩ Quay lại đăng ký" trong AdminDashboard (fixed góc trái)
+   - Nút "Đăng xuất" (fixed góc phải)
+
+2. Phân trang 10 ID mỗi trang
+   - Đã thêm pagination với itemsPerPage = 10
+   - Reset về page 1 khi filter thay đổi
+
+3. Bỏ nút xóa individual ở cột Thao tác
+   - Chỉ còn nút "Xem" và "Ảnh"
+
+4. Reset database PostgreSQL
+   - Tạo file RESET_DATABASE.md
+
+5. Scan video từ thư mục
+   - Tạo endpoint POST /api/customers/videos/scan-videos
+   - Nút "📂 Scan videos folder" trong AdminDashboard
+   - Thư mục scan: server/uploads/videos
+   - Định dạng file: ID1.mp4, ID1_T1.mp4, ID2.mp4...
+
+== VẤN ĐỀ CÒN LẠI ==
+
+1. Video trong local không scan được từ Railway
+   - Nguyên nhân: Đang mở admin từ lumigrade.up.railway.app
+   - Frontend gọi API đến Railway server, không phải localhost
+   - Cần chạy server local hoặc upload video lên Railway
+
+== VIỆC CẦN LÀM TIẾP THEO ==
+
+1. Chọn 1 trong 2 cách:
+   a) Chạy hoàn toàn local:
+      - Chạy server: cd server && npm start
+      - Chạy client: cd client && npm start  
+      - Mở http://localhost:3000
+      - Video trong E:\KhachHang\server\uploads\videos sẽ được scan
+   
+   b) Upload video lên Railway:
+      - Cần upload 4 file video vào /app/server/uploads/videos trên Railway
+      - Hoặc dùng Railway CLI để upload
+
+2. Kiểm tra upload video thành công
+   - Kiểm tra video đã được gán đúng ID khách hàng
+   - Kiểm tra status cập nhật
+
+3. Deploy lên Railway (nếu muốn dùng production)
+
+== FILE ĐÃ THAY ĐỔI HÔM NAY ==
+
+- client/src/pages/AdminDashboard.js
+- client/src/pages/CustomerForm.js  
+- server/controllers/customerController.js
+- server/routes/customers.js
+- RESET_DATABASE.md
+- .gitignore (không thay đổi)
+
+== COMMIT HIỆN TẠI ==
+30fb17b - "Remove video selection UI, change scan folder to uploads/videos"
+
+=== END ===

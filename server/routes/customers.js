@@ -21,6 +21,9 @@ router.post('/videos/batch-folder', adminController.verifyToken, customerControl
 // Scan và upload video từ thư mục videos (admin only) - scan /uploads/videos
 router.post('/videos/scan-videos', adminController.verifyToken, customerController.scanVideosFolder);
 
+// Scan và upload video từ Google Drive (admin only)
+router.post('/videos/scan-google-drive', adminController.verifyToken, customerController.scanGoogleDriveVideos);
+
 // Video routes (admin only)
 router.post('/:id/video', adminController.verifyToken, customerController.uploadMiddleware.single('video'), customerController.uploadVideo);
 router.delete('/:id/video', adminController.verifyToken, customerController.deleteVideo);

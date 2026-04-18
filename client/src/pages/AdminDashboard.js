@@ -40,6 +40,7 @@ function AdminDashboard() {
 
   // Batch video upload states
   const [scanningVideosFolder, setScanningVideosFolder] = useState(false);
+  const [scanningGoogleDrive, setScanningGoogleDrive] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -333,6 +334,28 @@ function AdminDashboard() {
     }
   };
 
+  const handleScanGoogleDrive = async () => {
+    const token = localStorage.getItem('adminToken');
+    setScanningGoogleDrive(true);
+    try {
+      const response = await axios.post(`${API_URL}/customers/videos/scan-google-drive`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        alert(response.data.message);
+        if (response.data.errors && response.data.errors.length > 0) {
+          alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
+        }
+        fetchCustomers(token);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Lỗi khi scan Google Drive');
+    } finally {
+      setScanningGoogleDrive(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (!uploadFile || !selectedCustomer) {
       setError('Vui lòng chọn file video');
@@ -459,6 +482,9 @@ function AdminDashboard() {
           </button>
           <button onClick={handleScanVideosFolder} disabled={scanningVideosFolder} className="btn btn-primary">
             {scanningVideosFolder ? 'Đang scan...' : '📂 Scan videos folder'}
+          </button>
+          <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary" style={{ marginLeft: '10px' }}>
+            {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
           </button>
         </div>
       </div>

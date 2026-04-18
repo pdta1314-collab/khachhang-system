@@ -4,6 +4,7 @@ const QRCode = require('qrcode');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const googleDriveService = require('../services/googleDriveService');
 
 // URL công khai (Railway)
 const BASE_URL = 'https://web-production-e5a3a.up.railway.app';
@@ -686,6 +687,106 @@ exports.scanVideosFolder = async (req, res) => {
   } catch (error) {
     console.error('Lỗi scan và upload từ thư mục videos:', error);
     res.status(500).json({ error: 'Lỗi server khi scan thư mục videos' });
+  }
+};
+
+// Scan và upload video từ Google Drive
+exports.scanGoogleDriveVideos = async (req, res) => {
+  try {
+    // Lấy danh sách video từ Google Drive
+    const driveFiles = await googleDriveService.getVideosFromFolder();
+
+    if (driveFiles.length === 0) {
+      return res.json({
+        success: true,
+        message: 'Folder Google Drive không có file video nào.',
+        uploaded: 0,
+        files: [],
+        errors: []
+      });
+    }
+
+    let uploadedCount = 0;
+    const errors = [];
+    const uploadedFiles = [];
+
+    // Tạo thư mục temp để download
+    const tempDir = path.join(__dirname, '../uploads/temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    for (const file of driveFiles) {
+      try {
+        // Parse filename: ID1_T1.mp4, ID1_T2.mp4, ID2.mp4, etc.
+        const match = file.name.match(/^ID(\d+)(?:_T(\d+))?\.\w+$/i);
+        
+        if (!match) {
+          errors.push({ filename: file.name, error: 'Tên file không đúng định dạng (VD: ID1.mp4, ID1_T1.mp4)' });
+          continue;
+        }
+        
+        const customerId = parseInt(match[1]);
+        const takeNumber = match[2] || '1';
+        
+        // Kiểm tra khách hàng tồn tại
+        const customer = await Customer.getById(customerId);
+        if (!customer) {
+          errors.push({ filename: file.name, error: `Không tìm thấy khách hàng ID ${customerId}` });
+          continue;
+        }
+        
+        // Download file từ Google Drive
+        const tempPath = path.join(tempDir, file.name);
+        await googleDriveService.downloadFile(file.id, tempPath);
+        
+        // Tạo thư mục cho khách hàng nếu chưa có
+        const customerFolder = path.join(__dirname, '../uploads', `customer_${customerId}`);
+        if (!fs.existsSync(customerFolder)) {
+          fs.mkdirSync(customerFolder, { recursive: true });
+        }
+        
+        // Di chuyển file vào thư mục khách hàng
+        const newFilename = `take_${takeNumber}_${Date.now()}${path.extname(file.name)}`;
+        const newPath = path.join(customerFolder, newFilename);
+        
+        fs.renameSync(tempPath, newPath);
+        
+        // Cập nhật video_path
+        const relativePath = `uploads/customer_${customerId}/${newFilename}`;
+        await Customer.updateVideo(customerId, relativePath);
+        
+        uploadedCount++;
+        uploadedFiles.push({
+          customerId,
+          customerName: customer.name,
+          filename: newFilename,
+          takeNumber
+        });
+        
+      } catch (err) {
+        errors.push({ filename: file.name, error: err.message });
+      }
+    }
+    
+    // Xóa file temp
+    const tempFiles = fs.readdirSync(tempDir);
+    tempFiles.forEach(file => {
+      fs.unlinkSync(path.join(tempDir, file));
+    });
+    
+    res.json({
+      success: true,
+      message: uploadedCount > 0 
+        ? `Đã upload ${uploadedCount} video thành công từ Google Drive`
+        : 'Không có video nào được upload',
+      uploaded: uploadedCount,
+      files: uploadedFiles,
+      errors
+    });
+  } catch (error) {
+    console.error('Lỗi scan và upload từ Google Drive:', error);
+    res.status(500).json({ error: 'Lỗi server khi scan Google Drive: ' + error.message });
   }
 };
 
