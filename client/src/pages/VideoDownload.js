@@ -10,10 +10,15 @@ function VideoDownload() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const videoRef = useRef(null);
 
   useEffect(() => {
     fetchCustomer();
+    // Kiểm tra Web Share API sau khi mount
+    setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
+    setIsIOS(typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent));
   }, [uniqueId]);
 
   const fetchCustomer = async () => {
@@ -54,7 +59,8 @@ function VideoDownload() {
       link.download = `video-${customer.name}-${customer.id}.mp4`;
       
       // Đối với iOS Safari, cần mở trong tab mới
-      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      const isIOSDevice = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOSDevice) {
         // iOS: Mở video trong tab mới để người dùng có thể "Share" → "Save to Files"
         window.open(customer.videoUrl, '_blank');
       } else {
@@ -80,7 +86,7 @@ function VideoDownload() {
     if (!customer?.videoUrl) return;
     
     // Sử dụng Web Share API nếu có (tốt cho mobile)
-    if (navigator.share && navigator.canShare) {
+    if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
       try {
         const response = await fetch(customer.videoUrl);
         const blob = await response.blob();
@@ -208,7 +214,7 @@ function VideoDownload() {
             </button>
 
             {/* Nút Chia sẻ - chỉ hiện nếu Web Share API hỗ trợ */}
-            {navigator.share && (
+            {canShare && (
               <button 
                 onClick={handleShare}
                 className="btn btn-secondary"
@@ -229,7 +235,7 @@ function VideoDownload() {
             )}
 
             {/* Hướng dẫn cho iOS */}
-            {/iPad|iPhone|iPod/.test(navigator.userAgent) && (
+            {isIOS && (
               <div style={{ 
                 padding: '12px', 
                 background: '#e7f3ff', 
