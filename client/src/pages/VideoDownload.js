@@ -75,27 +75,59 @@ function VideoDownload() {
       return;
     }
     
-    // Sử dụng Web Share API nếu có (tốt cho mobile)
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: `Video của ${customer.name}`,
-          text: `Video của ${customer.name} - tải tại: ${customer.videoUrl}`,
-          url: customer.videoUrl
-        });
-        return;
-      } catch (err) {
-        console.log('Share failed, falling back to copy link');
-      }
-    }
+    setIsDownloading(true);
     
-    // Fallback: Copy link to clipboard
     try {
+      // Fetch video as blob
+      console.log('Fetching video blob...');
+      const response = await fetch(customer.videoUrl);
+      const blob = await response.blob();
+      console.log('Blob fetched, size:', blob.size);
+      
+      // Create file from blob
+      const file = new File([blob], `video-${customer.name}.mp4`, { type: 'video/mp4' });
+      console.log('File created:', file.name);
+      
+      // Use Web Share API with file (supports iOS Photos)
+      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+        try {
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `Video của ${customer.name}`,
+              text: 'Video từ sự kiện',
+              files: [file]
+            });
+            console.log('Share successful');
+            return;
+          }
+        } catch (shareErr) {
+          console.log('File share failed, trying URL share:', shareErr);
+        }
+      }
+      
+      // Fallback: Share URL
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        try {
+          await navigator.share({
+            title: `Video của ${customer.name}`,
+            text: `Video của ${customer.name} - tải tại: ${customer.videoUrl}`,
+            url: customer.videoUrl
+          });
+          console.log('URL share successful');
+          return;
+        } catch (urlShareErr) {
+          console.log('URL share failed:', urlShareErr);
+        }
+      }
+      
+      // Fallback: Copy link
       await navigator.clipboard.writeText(customer.videoUrl);
       alert('Đã copy link video! Bạn có thể gửi link này cho người khác.');
     } catch (err) {
-      console.error('Copy failed:', err);
-      alert('Không thể copy link. Vui lòng copy link thủ công từ trình duyệt.');
+      console.error('Share error:', err);
+      alert('Lỗi khi chia sẻ: ' + err.message);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
