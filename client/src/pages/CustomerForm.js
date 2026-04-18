@@ -61,21 +61,22 @@ function CustomerForm() {
   };
 
   return (
-    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '20px' }}>
+      {/* Logo làm tiêu đề trang - nằm ngoài card */}
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <img
+          src="/logo.png"
+          alt="Logo"
+          style={{
+            width: '300px',
+            height: 'auto',
+            objectFit: 'contain',
+            maxWidth: '100%'
+          }}
+        />
+      </div>
+
       <div className="card" style={{ width: '100%', maxWidth: '500px', padding: '30px' }}>
-        {/* Logo to làm tiêu đề trang */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <img
-            src="/logo.png"
-            alt="Logo"
-            style={{
-              width: '300px',
-              height: 'auto',
-              objectFit: 'contain',
-              maxWidth: '100%'
-            }}
-          />
-        </div>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '24px' }}>
