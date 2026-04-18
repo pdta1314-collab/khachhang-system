@@ -480,10 +480,7 @@ function AdminDashboard() {
           <button onClick={exportToCSV} className="btn btn-primary">
             Xuất CSV
           </button>
-          <button onClick={handleScanVideosFolder} disabled={scanningVideosFolder} className="btn btn-primary">
-            {scanningVideosFolder ? 'Đang scan...' : '📂 Scan videos folder'}
-          </button>
-          <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary" style={{ marginLeft: '10px' }}>
+          <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary">
             {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
           </button>
         </div>
