@@ -163,6 +163,11 @@ function VideoDownload() {
           <div>
             {/* Video Player với controls đầy đủ cho mobile */}
             <div style={{ marginBottom: '20px', position: 'relative' }}>
+              {/* Debug info */}
+              <div style={{ padding: '8px', background: '#f0f0f0', fontSize: '11px', marginBottom: '8px', wordBreak: 'break-all' }}>
+                <strong>Video URL:</strong> {customer?.videoUrl || 'Không có'}
+              </div>
+              
               <video 
                 ref={videoRef}
                 controls 
@@ -177,8 +182,14 @@ function VideoDownload() {
                 }}
                 src={customer?.videoUrl}
                 onError={(e) => {
-                  console.error('Video error:', e);
-                  setError('Không thể tải video. Vui lòng thử tải về máy.');
+                  console.error('Video error event:', e);
+                  console.error('Video error details:', e.target?.error);
+                  console.error('Video src:', e.target?.src);
+                  setError(`Lỗi tải video: ${e.target?.error?.message || 'Không xác định'}. Thử tải về máy.`);
+                }}
+                onLoadedMetadata={(e) => {
+                  console.log('Video loaded successfully:', e.target.src);
+                  console.log('Video duration:', e.target.duration);
                 }}
               >
                 <source src={customer?.videoUrl} type="video/mp4" />
