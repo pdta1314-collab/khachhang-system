@@ -61,8 +61,44 @@ function CustomerForm() {
   };
 
   return (
-    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
       <div className="card" style={{ width: '100%', maxWidth: '500px' }}>
+        {/* Facebook-style Cover */}
+        <div style={{
+          height: '200px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          position: 'relative',
+          borderTopLeftRadius: '8px',
+          borderTopRightRadius: '8px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            bottom: '-50px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100px',
+            height: '100px',
+            backgroundColor: 'white',
+            borderRadius: '50%',
+            padding: '5px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+          }}>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
+        </div>
+        
+        {/* Content area with padding for logo */}
+        <div style={{ paddingTop: '60px', padding: '20px 20px 30px' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '24px' }}>
@@ -148,13 +184,31 @@ function CustomerForm() {
               </p>
             </div>
 
-            <div className="qr-code" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <QRCodeSVG 
-                value={customerData?.downloadUrl || ''} 
-                size={200}
-                level="H"
-                includeMargin={true}
-              />
+            <div className="qr-code" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', position: 'relative' }}>
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <QRCodeSVG 
+                  value={customerData?.downloadUrl || ''} 
+                  size={200}
+                  level="H"
+                  includeMargin={true}
+                />
+                <img
+                  src="/logo.png"
+                  alt="Logo"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '8px',
+                    backgroundColor: 'white',
+                    padding: '5px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                  }}
+                />
+              </div>
             </div>
 
             {/* Hiển thị ID lớn */}
@@ -211,6 +265,7 @@ function CustomerForm() {
             </button>
           </>
         )}
+        </div>
       </div>
     </div>
   );

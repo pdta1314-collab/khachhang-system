@@ -454,7 +454,39 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: '20px', paddingBottom: '40px' }}>
+    <div className="container" style={{ paddingTop: '0', paddingBottom: '40px', backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
+      {/* Facebook-style Cover */}
+      <div style={{
+        height: '200px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        position: 'relative',
+        marginBottom: '50px'
+      }}>
+        <div style={{
+          position: 'absolute',
+          bottom: '-50px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100px',
+          height: '100px',
+          backgroundColor: 'white',
+          borderRadius: '50%',
+          padding: '5px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+        }}>
+          <img
+            src="/logo.png"
+            alt="Logo"
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              objectFit: 'contain'
+            }}
+          />
+        </div>
+      </div>
+
       {/* Nút Quay lại đăng ký - góc trái */}
       <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000 }}>
         <button onClick={() => navigate('/')} className="btn btn-secondary">
@@ -469,20 +501,22 @@ function AdminDashboard() {
         </button>
       </div>
 
-      <div className="admin-header">
-        <div>
-          <h1 className="admin-title">Quản lý Khách hàng</h1>
-          <p style={{ color: '#666', marginTop: '4px' }}>
-            Xin chào, <strong>{adminUser?.username}</strong>
-          </p>
-        </div>
-        <div className="admin-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button onClick={exportToCSV} className="btn btn-primary">
-            Xuất CSV
-          </button>
-          <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary">
-            {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
-          </button>
+      <div className="card" style={{ marginTop: '20px' }}>
+        <div className="admin-header" style={{ textAlign: 'center', marginTop: '20px' }}>
+          <div>
+            <h1 className="admin-title" style={{ marginBottom: '8px' }}>Quản lý Khách hàng</h1>
+            <p style={{ color: '#666', marginTop: '4px' }}>
+              Xin chào, <strong>{adminUser?.username}</strong>
+            </p>
+          </div>
+          <div className="admin-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginTop: '16px' }}>
+            <button onClick={exportToCSV} className="btn btn-primary">
+              Xuất CSV
+            </button>
+            <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary">
+              {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -906,11 +940,31 @@ function AdminDashboard() {
               {/* QR Code */}
               <div style={{ marginBottom: '20px' }}>
                 <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>Mã QR để tải video</p>
-                <QRCodeSVG 
-                  value={`${window.location.origin}/video/${viewCustomer.uniqueId}`}
-                  size={200}
-                  style={{ margin: '0 auto', display: 'block' }}
-                />
+                <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto' }}>
+                  <QRCodeSVG 
+                    value={`${window.location.origin}/video/${viewCustomer.uniqueId}`}
+                    size={200}
+                    style={{ display: 'block' }}
+                    level="H"
+                    includeMargin={true}
+                  />
+                  <img
+                    src="/logo.png"
+                    alt="Logo"
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '8px',
+                      backgroundColor: 'white',
+                      padding: '5px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Thông tin chi tiết */}

@@ -130,8 +130,44 @@ function VideoDownload() {
   }
 
   return (
-    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
       <div className="card" style={{ width: '100%', maxWidth: '500px' }}>
+        {/* Facebook-style Cover */}
+        <div style={{
+          height: '200px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          position: 'relative',
+          borderTopLeftRadius: '8px',
+          borderTopRightRadius: '8px',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            bottom: '-50px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100px',
+            height: '100px',
+            backgroundColor: 'white',
+            borderRadius: '50%',
+            padding: '5px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+          }}>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
+        </div>
+        
+        {/* Content area with padding for logo */}
+        <div style={{ paddingTop: '60px', padding: '20px 20px 30px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '22px' }}>
           Trang tải Video
         </h1>
@@ -247,6 +283,7 @@ function VideoDownload() {
           <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>
             Quay về trang chủ
           </a>
+        </div>
         </div>
       </div>
     </div>
