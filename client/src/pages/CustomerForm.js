@@ -68,7 +68,7 @@ function CustomerForm() {
           src="/logo.png"
           alt="Logo"
           style={{
-            width: '400px',
+            width: '500px',
             height: 'auto',
             objectFit: 'contain',
             maxWidth: '100%',
@@ -80,8 +80,8 @@ function CustomerForm() {
       <div style={{ width: '100%', maxWidth: '500px' }}>
         {!success ? (
           <>
-            <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '24px' }}>
-              Thu thập Thông tin Khách hàng
+            <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+              NHẬP THÔNG TIN ĐĂNG KÝ
             </h1>
             
             {error && (
@@ -164,30 +164,30 @@ function CustomerForm() {
             </div>
 
             <div className="qr-code" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <div style={{ position: 'relative', display: 'inline-block' }}>
-                <QRCodeSVG 
-                  value={customerData?.downloadUrl || ''} 
-                  size={200}
-                  level="H"
-                  includeMargin={true}
-                />
-                {/* Logo ở giữa QR code */}
+              <div style={{ position: 'relative', display: 'inline-block', width: '200px', height: '200px' }}>
+                {/* Logo mờ phía sau QR code */}
                 <img
                   src="/logo.png"
                   alt="Logo"
                   style={{
                     position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '40px',
-                    height: '40px',
+                    top: '0',
+                    left: '0',
+                    width: '200px',
+                    height: '200px',
                     objectFit: 'contain',
-                    backgroundColor: 'white',
-                    padding: '2px',
-                    borderRadius: '4px'
+                    opacity: '0.15',
+                    zIndex: '1'
                   }}
                 />
+                <div style={{ position: 'relative', zIndex: '2' }}>
+                  <QRCodeSVG 
+                    value={customerData?.downloadUrl || ''} 
+                    size={200}
+                    level="H"
+                    includeMargin={true}
+                  />
+                </div>
               </div>
             </div>
 
