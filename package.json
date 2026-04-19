@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && node server/server.js",
+    "start": "node server/server.js",
     "start:ngrok": "node start-ngrok.js",
     "dev": "node server/server.js",
-    "build": "cd client && rm -rf build && npm install && npm run build",
+    "build": "cd client && npm install && npm run build",
     "heroku-postbuild": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
