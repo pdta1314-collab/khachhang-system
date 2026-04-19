@@ -6,10 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const googleDriveService = require('../services/googleDriveService');
 
-// URL công khai (Railway) - lấy từ environment variable
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-console.log('customerController - process.env.BASE_URL:', process.env.BASE_URL);
-console.log('customerController - Using BASE_URL:', BASE_URL);
+// URL công khai - lấy từ process.env trong từng function để đảm bảo đã được set bởi server.js
+const getBaseUrl = () => process.env.BASE_URL || 'http://localhost:3000';
 
 // Cấu hình multer cho upload video
 const storage = multer.diskStorage({
@@ -83,7 +81,7 @@ exports.createCustomer = async (req, res) => {
     }
     
     // Tạo QR code
-    const baseUrl = BASE_URL;
+    const baseUrl = getBaseUrl();
     console.log('Using BASE_URL:', baseUrl);
     
     const qrUrl = `${baseUrl}/video/${customer.uniqueId}`;
@@ -118,7 +116,7 @@ exports.getCustomer = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const baseUrl = BASE_URL;
+    const baseUrl = getBaseUrl();
     const videoUrl = customer.video_path ? `${baseUrl}/${customer.video_path}` : null;
 
     res.json({
@@ -152,7 +150,7 @@ exports.getCustomerByUniqueId = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const baseUrl = BASE_URL;
+    const baseUrl = getBaseUrl();
     const videoUrl = customer.video_path ? `${baseUrl}/${customer.video_path}` : null;
     console.log('getCustomerByUniqueId - videoUrl:', videoUrl, 'video_path:', customer.video_path, 'BASE_URL:', baseUrl);
 
@@ -182,7 +180,7 @@ exports.getAllCustomers = async (req, res) => {
   try {
     const customers = await Customer.getAll();
     
-    const baseUrl = BASE_URL;
+    const baseUrl = getBaseUrl();
     const customersWithUrls = customers.map(c => ({
       ...c,
       videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null,
@@ -353,7 +351,7 @@ exports.getImages = async (req, res) => {
     const { id } = req.params;
     const images = await CustomerImage.getByCustomerId(id);
     
-    const baseUrl = BASE_URL;
+    const baseUrl = getBaseUrl();
     const imagesWithUrls = images.map(img => ({
       id: img.id,
       url: `${baseUrl}/uploads/images/${path.basename(img.image_path)}`,
@@ -408,7 +406,7 @@ exports.getLatestCustomers = async (req, res) => {
       latestCustomers = customers.filter(c => new Date(c.registration_time).getTime() > sinceTime);
     }
     
-    const baseUrl = BASE_URL;
+    const baseUrl = getBaseUrl();
     const customersWithUrls = latestCustomers.map(c => ({
       ...c,
       videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null,
