@@ -137,7 +137,7 @@ function VideoDownload() {
           src="/logo.png"
           alt="Logo"
           style={{
-            width: '400px',
+            width: '500px',
             height: 'auto',
             objectFit: 'contain',
             maxWidth: '100%',
@@ -146,12 +146,12 @@ function VideoDownload() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '22px' }}>
-          Trang tải Video
+      <div style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+          TRANG TẢI VIDEO
         </h1>
 
-        <div style={{ marginBottom: '24px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
+        <div style={{ marginBottom: '24px', padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e0e0e0' }}>
           <p style={{ marginBottom: '12px' }}>
             <strong>Họ tên:</strong> {customer?.name}
           </p>
