@@ -7,7 +7,12 @@ const fs = require('fs');
 const googleDriveService = require('../services/googleDriveService');
 
 // Trả về relative path, frontend sẽ tự ghép domain để tránh lỗi BASE_URL
-const getVideoPath = (videoPath) => videoPath ? `/${videoPath}` : null;
+const getVideoPath = (videoPath) => {
+  if (!videoPath) return null;
+  // Chỉ lấy phần uploads/filename từ full path
+  const match = videoPath.match(/uploads[\\/](.+)$/);
+  return match ? `/uploads/${match[1]}` : `/uploads/${path.basename(videoPath)}`;
+};
 
 // Lấy base URL từ request headers cho QR code
 const getBaseUrlFromReq = (req) => {
