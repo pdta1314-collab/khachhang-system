@@ -172,7 +172,7 @@ function CustomerForm() {
                   left: '0',
                   width: '200px',
                   height: '200px',
-                  opacity: '0.6',
+                  opacity: '0.7',
                   zIndex: '1',
                   display: 'flex',
                   alignItems: 'center',
