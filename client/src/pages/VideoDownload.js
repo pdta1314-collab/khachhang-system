@@ -21,7 +21,12 @@ function VideoDownload() {
       const response = await axios.get(`${API_URL}/customers/unique/${uniqueId}`);
       console.log('API response:', response.data);
       if (response.data.success) {
-        setCustomer(response.data.customer);
+        const customerData = response.data.customer;
+        // Ghép domain nếu server trả về relative path
+        if (customerData.videoUrl && customerData.videoUrl.startsWith('/')) {
+          customerData.videoUrl = window.location.origin + customerData.videoUrl;
+        }
+        setCustomer(customerData);
       } else {
         setError('Không tìm thấy thông tin khách hàng');
       }

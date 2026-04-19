@@ -6,8 +6,15 @@ const path = require('path');
 const fs = require('fs');
 const googleDriveService = require('../services/googleDriveService');
 
-// URL công khai - lấy từ process.env trong từng function để đảm bảo đã được set bởi server.js
-const getBaseUrl = () => process.env.BASE_URL || 'http://localhost:3000';
+// Trả về relative path, frontend sẽ tự ghép domain để tránh lỗi BASE_URL
+const getVideoPath = (videoPath) => videoPath ? `/${videoPath}` : null;
+
+// Lấy base URL từ request headers cho QR code
+const getBaseUrlFromReq = (req) => {
+  const protocol = req.headers['x-forwarded-proto'] || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
+  return `${protocol}://${host}`;
+};
 
 // Cấu hình multer cho upload video
 const storage = multer.diskStorage({
@@ -80,10 +87,8 @@ exports.createCustomer = async (req, res) => {
       }
     }
     
-    // Tạo QR code
-    const baseUrl = getBaseUrl();
-    console.log('Using BASE_URL:', baseUrl);
-    
+    // Tạo QR code - dùng full URL từ request headers
+    const baseUrl = getBaseUrlFromReq(req);
     const qrUrl = `${baseUrl}/video/${customer.uniqueId}`;
     const qrCode = await QRCode.toDataURL(qrUrl);
     
@@ -116,8 +121,7 @@ exports.getCustomer = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const baseUrl = getBaseUrl();
-    const videoUrl = customer.video_path ? `${baseUrl}/${customer.video_path}` : null;
+    const videoUrl = getVideoPath(customer.video_path);
 
     res.json({
       success: true,
@@ -150,9 +154,8 @@ exports.getCustomerByUniqueId = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const baseUrl = getBaseUrl();
-    const videoUrl = customer.video_path ? `${baseUrl}/${customer.video_path}` : null;
-    console.log('getCustomerByUniqueId - videoUrl:', videoUrl, 'video_path:', customer.video_path, 'BASE_URL:', baseUrl);
+    const videoUrl = getVideoPath(customer.video_path);
+    console.log('getCustomerByUniqueId - videoUrl:', videoUrl, 'video_path:', customer.video_path);
 
     res.json({
       success: true,
@@ -180,10 +183,9 @@ exports.getAllCustomers = async (req, res) => {
   try {
     const customers = await Customer.getAll();
     
-    const baseUrl = getBaseUrl();
     const customersWithUrls = customers.map(c => ({
       ...c,
-      videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null,
+      videoUrl: c.video_path ? `/uploads/${path.basename(c.video_path)}` : null,
       hasVideo: !!c.video_path,
       hasImages: c.image_count > 0
     }));
@@ -351,10 +353,9 @@ exports.getImages = async (req, res) => {
     const { id } = req.params;
     const images = await CustomerImage.getByCustomerId(id);
     
-    const baseUrl = getBaseUrl();
     const imagesWithUrls = images.map(img => ({
       id: img.id,
-      url: `${baseUrl}/uploads/images/${path.basename(img.image_path)}`,
+      url: `/uploads/images/${path.basename(img.image_path)}`,
       createdAt: img.created_at
     }));
 
@@ -406,10 +407,9 @@ exports.getLatestCustomers = async (req, res) => {
       latestCustomers = customers.filter(c => new Date(c.registration_time).getTime() > sinceTime);
     }
     
-    const baseUrl = getBaseUrl();
     const customersWithUrls = latestCustomers.map(c => ({
       ...c,
-      videoUrl: c.video_path ? `${baseUrl}/uploads/${path.basename(c.video_path)}` : null,
+      videoUrl: c.video_path ? `/uploads/${path.basename(c.video_path)}` : null,
       hasVideo: !!c.video_path,
       hasImages: c.image_count > 0
     }));
