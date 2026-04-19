@@ -6,8 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const googleDriveService = require('../services/googleDriveService');
 
-// URL công khai (Railway)
-const BASE_URL = 'https://web-production-e5a3a.up.railway.app';
+// URL công khai (Railway) - lấy từ environment variable
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 // Cấu hình multer cho upload video
 const storage = multer.diskStorage({
