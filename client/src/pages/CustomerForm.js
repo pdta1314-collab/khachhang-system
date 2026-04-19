@@ -77,7 +77,7 @@ function CustomerForm() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '400px', background: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+      <div style={{ width: '100%', maxWidth: '500px', background: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
@@ -172,7 +172,7 @@ function CustomerForm() {
                   left: '0',
                   width: '200px',
                   height: '200px',
-                  opacity: '0.4',
+                  opacity: '0.6',
                   zIndex: '1',
                   display: 'flex',
                   alignItems: 'center',
