@@ -8,6 +8,8 @@ const googleDriveService = require('../services/googleDriveService');
 
 // URL công khai (Railway) - lấy từ environment variable
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+console.log('customerController - process.env.BASE_URL:', process.env.BASE_URL);
+console.log('customerController - Using BASE_URL:', BASE_URL);
 
 // Cấu hình multer cho upload video
 const storage = multer.diskStorage({
