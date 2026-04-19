@@ -165,18 +165,24 @@ function CustomerForm() {
 
             <div className="qr-code" style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
               <div style={{ position: 'relative', width: '200px', height: '200px' }}>
-                {/* Logo mờ phía sau QR code - căn bằng và phủ đầy */}
+                <QRCodeSVG 
+                  value={customerData?.downloadUrl || ''} 
+                  size={200}
+                  level="H"
+                  includeMargin={true}
+                />
+                {/* Logo ở giữa QR code */}
                 <div style={{
                   position: 'absolute',
-                  top: '0',
-                  left: '0',
-                  width: '200px',
-                  height: '200px',
-                  opacity: '0.7',
-                  zIndex: '1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '50px',
+                  height: '50px',
+                  backgroundColor: 'white',
+                  borderRadius: '8px',
+                  padding: '4px',
+                  zIndex: '2'
                 }}>
                   <img
                     src="/logo.png"
@@ -184,16 +190,8 @@ function CustomerForm() {
                     style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'cover'
+                      objectFit: 'contain'
                     }}
-                  />
-                </div>
-                <div style={{ position: 'relative', zIndex: '2' }}>
-                  <QRCodeSVG 
-                    value={customerData?.downloadUrl || ''} 
-                    size={200}
-                    level="H"
-                    includeMargin={true}
                   />
                 </div>
               </div>
