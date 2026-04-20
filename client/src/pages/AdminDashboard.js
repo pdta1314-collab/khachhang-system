@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { QRCodeSVG } from 'qrcode.react';
 
 const API_URL = '/api';
@@ -551,17 +552,17 @@ function AdminDashboard() {
       c.videoCount || 0
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
+    // Tạo worksheet
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-    const blob = new Blob(['ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    // Tạo workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Khách hàng');
+
+    // Xuất file
     const projectName = selectedProjectFolder ? selectedProjectFolder.name.replace(/\s+/g, '_') : 'khach-hang';
-    link.download = `${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-    link.click();
+    XLSX.writeFile(wb, `${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+
     addLog(`📊 Đã export Excel với ${data.length} khách hàng`, 'success');
   };
 
