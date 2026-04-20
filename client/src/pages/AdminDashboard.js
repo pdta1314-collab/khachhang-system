@@ -49,6 +49,12 @@ function AdminDashboard() {
   // Logs state for scan/upload
   const [logs, setLogs] = useState([]);
   const [autoScanEnabled, setAutoScanEnabled] = useState(true);
+
+  // Project selection states
+  const [selectedProjectFolder, setSelectedProjectFolder] = useState(null);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [googleDriveFolders, setGoogleDriveFolders] = useState([]);
+  const [loadingFolders, setLoadingFolders] = useState(false);
   
   // Add log function - logs mới nhất ở cuối để auto-scroll đúng
   const addLog = (message, type = 'info') => {
@@ -64,6 +70,50 @@ function AdminDashboard() {
       logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
     }
   }, [logs]);
+
+  // Fetch Google Drive folders
+  const fetchGoogleDriveFolders = async () => {
+    const token = localStorage.getItem('adminToken');
+    setLoadingFolders(true);
+    try {
+      const response = await axios.get(`${API_URL}/google-drive/folders`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data.success) {
+        setGoogleDriveFolders(response.data.folders || []);
+        setShowProjectModal(true);
+      }
+    } catch (err) {
+      setError('Không thể lấy danh sách folder từ Google Drive');
+      addLog(`❌ Lỗi lấy folder: ${err.message}`, 'error');
+    } finally {
+      setLoadingFolders(false);
+    }
+  };
+
+  // Select project folder
+  const handleSelectProjectFolder = async (folder) => {
+    const token = localStorage.getItem('adminToken');
+    setSelectedProjectFolder(folder);
+    setShowProjectModal(false);
+    addLog(`📁 Đã chọn folder: ${folder.name}`, 'info');
+    
+    // Auto sync videos from selected folder
+    try {
+      addLog(`🔄 Đang sync video từ folder ${folder.name}...`, 'info');
+      const response = await axios.post(`${API_URL}/google-drive/sync-folder`, 
+        { folderId: folder.id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      if (response.data.success) {
+        addLog(`✅ Đã sync ${response.data.linked || 0} video`, 'success');
+        fetchCustomers(token);
+      }
+    } catch (err) {
+      addLog(`❌ Lỗi sync: ${err.message}`, 'error');
+    }
+  };
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -488,6 +538,32 @@ function AdminDashboard() {
     }
   };
 
+  const exportToCSV = (data) => {
+    const headers = ['ID', 'Họ tên', 'Trang phục', 'Số điện thoại', 'Ngày đăng ký', 'Trạng thái', 'Số video'];
+    const rows = data.map(c => [
+      c.id,
+      c.name,
+      c.outfit,
+      c.phone || '',
+      new Date(c.created_at).toLocaleString('vi-VN'),
+      c.status || 'Chờ chụp',
+      c.videoCount || 0
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob(['ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const projectName = selectedProjectFolder ? selectedProjectFolder.name.replace(/\s+/g, '_') : 'khach-hang';
+    link.download = `${projectName}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    addLog(`📊 Đã export CSV với ${data.length} khách hàng`, 'success');
+  };
+
   const handleUpload = async () => {
     if (!uploadFile || !selectedCustomer) {
       setError('Vui lòng chọn file video');
@@ -606,8 +682,14 @@ function AdminDashboard() {
             </p>
           </div>
           <div className="admin-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button onClick={fetchGoogleDriveFolders} disabled={loadingFolders} className="btn btn-primary">
+              {loadingFolders ? 'Đang tải...' : selectedProjectFolder ? `📁 ${selectedProjectFolder.name}` : '📁 DỰ ÁN'}
+            </button>
             <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary">
               {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
+            </button>
+            <button onClick={() => exportToCSV(filteredCustomers)} className="btn btn-success">
+              📊 Export CSV
             </button>
           </div>
         </div>
@@ -1349,8 +1431,90 @@ function AdminDashboard() {
           </div>
         </div>
       )}
-    </div>
-  );
+
+      {/* Modal chọn folder Google Drive */}
+      {showProjectModal && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+      }} onClick={() => setShowProjectModal(false)}>
+        <div style={{
+          background: 'white',
+          padding: '24px',
+          borderRadius: '12px',
+          maxWidth: '500px',
+          width: '90%',
+          maxHeight: '80vh',
+          overflow: 'auto'
+        }} onClick={(e) => e.stopPropagation()}>
+          <h3 style={{ marginBottom: '20px', textAlign: 'center' }}>📂 Chọn Folder Dự Án</h3>
+          
+          {loadingFolders ? (
+            <p style={{ textAlign: 'center', color: '#666' }}>Đang tải...</p>
+          ) : googleDriveFolders.length === 0 ? (
+            <div>
+              <p style={{ textAlign: 'center', color: '#666' }}>Không tìm thấy folder nào</p>
+              <p style={{ textAlign: 'center', fontSize: '13px', color: '#999', marginTop: '10px' }}>
+                Hãy tạo folder trong Google Drive với định dạng: dd-mm-yyyy_TênDự án
+              </p>
+            </div>
+          ) : (
+            <div>
+              {googleDriveFolders.map((folder) => (
+                <div 
+                  key={folder.id}
+                  onClick={() => handleSelectProjectFolder(folder)}
+                  style={{
+                    padding: '12px',
+                    marginBottom: '8px',
+                    background: selectedProjectFolder?.id === folder.id ? '#d4edda' : '#f8f9fa',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    border: selectedProjectFolder?.id === folder.id ? '2px solid #28a745' : '1px solid #e0e0e0'
+                  }}
+                >
+                  <p style={{ fontWeight: 'bold', color: '#333' }}>{folder.name}</p>
+                  <p style={{ fontSize: '12px', color: '#666' }}>
+                    📁 ID: {folder.id}
+                  </p>
+                  {folder.createdTime && (
+                    <p style={{ fontSize: '11px', color: '#999' }}>
+                      Tạo: {new Date(folder.createdTime).toLocaleDateString('vi-VN')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button 
+            onClick={() => setShowProjectModal(false)}
+            style={{ 
+              width: '100%',
+              padding: '12px', 
+              background: '#95a5a6', 
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              marginTop: '20px'
+            }}
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
 
 export default AdminDashboard;

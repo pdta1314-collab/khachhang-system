@@ -40,11 +40,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 const customerRoutes = require('./routes/customers');
 const adminRoutes = require('./routes/admin');
 const projectRoutes = require('./routes/projects');
+const googleDriveRoutes = require('./routes/googleDrive');
 
 // Use routes
 app.use('/api/customers', customerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/google-drive', googleDriveRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
