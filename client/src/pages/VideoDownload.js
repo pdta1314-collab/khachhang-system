@@ -133,12 +133,12 @@ function VideoDownload() {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            zIndex: -2
+            zIndex: 0
           }}
         >
           <source src="/trumso.mp4" type="video/mp4" />
         </video>
-        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', position: 'relative', zIndex: 1 }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
         <div style={{ padding: '40px' }}>
           <div className="loading">
             <div className="spinner"></div>
@@ -165,12 +165,12 @@ function VideoDownload() {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            zIndex: -2
+            zIndex: 0
           }}
         >
           <source src="/trumso.mp4" type="video/mp4" />
         </video>
-        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', position: 'relative', zIndex: 1 }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', padding: '32px' }}>
           <div className="error-message">
             <h2 style={{ marginBottom: '16px', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Lỗi</h2>
@@ -200,12 +200,12 @@ function VideoDownload() {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          zIndex: -2
+          zIndex: 0
         }}
       >
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', padding: '20px', position: 'relative', zIndex: 1 }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px', position: 'relative', zIndex: 1 }}>
       {/* Logo làm tiêu đề trang - nằm ngoài card */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img

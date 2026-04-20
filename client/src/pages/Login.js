@@ -55,13 +55,13 @@ function Login() {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          zIndex: -2
+          zIndex: 0
         }}
       >
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
 
-      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', position: 'relative', zIndex: 1 }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
       <div style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '24px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           Đăng nhập Admin

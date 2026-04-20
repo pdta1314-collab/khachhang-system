@@ -77,13 +77,13 @@ function CustomerForm() {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          zIndex: -2
+          zIndex: 0
         }}
       >
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
 
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', padding: '20px', position: 'relative', zIndex: 1 }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px', position: 'relative', zIndex: 1 }}>
       {/* Logo làm tiêu đề trang - nằm ngoài card */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img
