@@ -47,26 +47,15 @@ function VideoDownload() {
       return;
     }
     
-    // Cách tải tốt nhất cho cả mobile và desktop
-    if (videoUrl.includes('drive.google.com')) {
-      // Với Google Drive, tạo iframe ẩn để force download
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = videoUrl;
-      document.body.appendChild(iframe);
-      setTimeout(() => document.body.removeChild(iframe), 5000);
-      
-      alert('Video ' + (index + 1) + ' đang được tải. Vui lòng kiểm tra thông báo tải xuống của trình duyệt.');
-    } else {
-      // Link trực tiếp - dùng thẻ a với download
-      const link = document.createElement('a');
-      link.href = videoUrl;
-      link.download = `video_${customer?.name}_${index + 1}.mp4`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    setIsDownloading(true);
+    
+    // Cách 1: Mở link thẳng trong tab mới (tốt cho mobile)
+    // Người dùng có thể xem video và bấm nút download của trình duyệt
+    window.open(videoUrl, '_blank');
+    
+    setTimeout(() => {
+      setIsDownloading(false);
+    }, 1000);
   };
 
   // Tải tất cả video cùng lúc
@@ -79,33 +68,22 @@ function VideoDownload() {
       return;
     }
     
-    // Tải từng video với delay để tránh chặn trình duyệt
+    setIsDownloading(true);
+    
+    // Mở từng video trong tab mới với delay
+    // Người dùng có thể xem và tải từng video
     customer.videoUrls.forEach((videoUrl, index) => {
       setTimeout(() => {
-        console.log('Auto downloading video', index + 1);
-        if (videoUrl.includes('drive.google.com')) {
-          const iframe = document.createElement('iframe');
-          iframe.style.display = 'none';
-          iframe.src = videoUrl;
-          document.body.appendChild(iframe);
-          setTimeout(() => {
-            if (document.body.contains(iframe)) {
-              document.body.removeChild(iframe);
-            }
-          }, 5000);
-        } else {
-          const link = document.createElement('a');
-          link.href = videoUrl;
-          link.download = `video_${customer?.name}_${index + 1}.mp4`;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      }, index * 1000); // Delay 1 giây giữa các video
+        console.log('Opening video', index + 1);
+        window.open(videoUrl, '_blank');
+      }, index * 800); // Delay 0.8 giây giữa các video
     });
     
-    alert(`Đang tải ${customer.videoUrls.length} video. Vui lòng kiểm tra thông báo tải xuống của trình duyệt.`);
+    alert(`Đang mở ${customer.videoUrls.length} video trong tab mới. Vui lòng tải từng video trên trình duyệt.`);
+    
+    setTimeout(() => {
+      setIsDownloading(false);
+    }, customer.videoUrls.length * 800 + 1000);
   };
 
   const handleShare = async () => {
@@ -232,28 +210,30 @@ function VideoDownload() {
               color: '#155724',
               textAlign: 'center'
             }}>
-              <strong>✅ Có {customer.videoCount} video đã sẵn sàng để tải</strong>
+              <strong>✅ Có {customer.videoCount} video đã sẵn sàng</strong><br/>
+              <small>Bấm nút bên dưới để mở video, sau đó dùng nút tải của trình duyệt</small>
             </div>
 
             {/* Nút Tải tất cả (nếu có nhiều video) */}
             {customer.videoCount > 1 && (
               <button 
                 onClick={handleDownloadAll}
+                disabled={isDownloading}
                 style={{
                   width: '100%',
                   padding: '16px',
-                  backgroundColor: '#dc2626',
+                  backgroundColor: isDownloading ? '#999' : '#dc2626',
                   color: 'white',
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '18px',
                   fontWeight: 'bold',
-                  cursor: 'pointer',
+                  cursor: isDownloading ? 'not-allowed' : 'pointer',
                   marginBottom: '20px',
                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                 }}
               >
-                📥📥📥 TẢI TẤT CẢ {customer.videoCount} VIDEO 📥📥📥
+                {isDownloading ? '⏳ Đang mở...' : `📥📥📥 MỞ TẤT CẢ ${customer.videoCount} VIDEO 📥📥📥`}
               </button>
             )}
 
@@ -277,19 +257,20 @@ function VideoDownload() {
                 {/* Nút Tải về cho từng video */}
                 <button 
                   onClick={() => handleDownload(videoUrl, index)}
+                  disabled={isDownloading}
                   style={{
                     width: '100%',
                     padding: '12px',
-                    backgroundColor: '#2563eb',
+                    backgroundColor: isDownloading ? '#999' : '#2563eb',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
                     fontSize: '14px',
                     fontWeight: 'bold',
-                    cursor: 'pointer'
+                    cursor: isDownloading ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  📥 Tải video {index + 1}
+                  {isDownloading ? '⏳ Đang mở...' : `📥 Xem & Tải video ${index + 1}`}
                 </button>
               </div>
             ))}
