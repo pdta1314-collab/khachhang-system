@@ -138,17 +138,21 @@ function VideoDownload() {
         >
           <source src="/trumso.mp4" type="video/mp4" />
         </video>
-        {/* Hình nền nằm trên video */}
+        {/* Hình nền nằm trên video - khung ở giữa */}
         <div style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
           width: '100%',
-          height: '100%',
+          maxWidth: '500px',
+          height: 'auto',
+          aspectRatio: '16/9',
           backgroundImage: 'url(/trumso.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          borderRadius: '20px',
           zIndex: 1
         }} />
         <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
@@ -183,17 +187,21 @@ function VideoDownload() {
         >
           <source src="/trumso.mp4" type="video/mp4" />
         </video>
-        {/* Hình nền nằm trên video */}
+        {/* Hình nền nằm trên video - khung ở giữa */}
         <div style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
           width: '100%',
-          height: '100%',
+          maxWidth: '500px',
+          height: 'auto',
+          aspectRatio: '16/9',
           backgroundImage: 'url(/trumso.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          borderRadius: '20px',
           zIndex: 1
         }} />
         <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
@@ -231,17 +239,21 @@ function VideoDownload() {
       >
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
-      {/* Hình nền nằm trên video */}
+      {/* Hình nền nằm trên video - khung ở giữa */}
       <div style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
         width: '100%',
-        height: '100%',
+        maxWidth: '500px',
+        height: 'auto',
+        aspectRatio: '16/9',
         backgroundImage: 'url(/trumso.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        borderRadius: '20px',
         zIndex: 1
       }} />
       <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px', position: 'relative', zIndex: 2 }}>

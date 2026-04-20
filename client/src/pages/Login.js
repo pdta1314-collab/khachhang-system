@@ -61,17 +61,21 @@ function Login() {
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
 
-            {/* Hình nền nằm trên video */}
+      {/* Hình nền nằm trên video - khung ở giữa */}
       <div style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
         width: '100%',
-        height: '100%',
+        maxWidth: '400px',
+        height: 'auto',
+        aspectRatio: '16/9',
         backgroundImage: 'url(/trumso.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+        borderRadius: '20px',
         zIndex: 1
       }} />
 
