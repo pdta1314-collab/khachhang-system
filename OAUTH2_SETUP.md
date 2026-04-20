@@ -26,7 +26,25 @@ Vì tổ chức của bạn đã chặn tạo Service Account key (`iam.disableS
 1. Vào **APIs & Services** → **Library**
 2. Tìm **Google Drive API** → Click **Enable**
 
-## Bước 3: Lấy Refresh Token (Chỉ cần làm 1 lần)
+## Bước 3: Cấu hình Redirect URI (Quan trọng - Fix lỗi redirect_uri_mismatch)
+
+**Lỗi `redirect_uri_mismatch` xảy ra khi URI chưa được thêm vào Google Cloud Console:**
+
+1. Vào **APIs & Services** → **Credentials**
+2. Tìm OAuth client ID bạn vừa tạo (`Drive Desktop Client`)
+3. Click **Edit** (biểu tượng bút)
+4. Trong mục **Authorized redirect URIs**, thêm:
+   ```
+   https://developers.google.com/oauthplayground
+   ```
+5. Click **Save**
+
+> ⚠️ **Nếu dùng Node.js script** (Cách 2 bên dưới), thêm thêm:
+> ```
+> http://localhost:3000/oauth2callback
+> ```
+
+## Bước 4: Lấy Refresh Token (Chỉ cần làm 1 lần)
 
 ### Cách 1: Dùng tool online (Dễ nhất)
 
@@ -107,7 +125,7 @@ server.listen(3000);
 
 Chạy: `node get-refresh-token.js`
 
-## Bước 4: Cấu hình Biến Môi Trường
+## Bước 5: Cấu hình Biến Môi Trường
 
 Thêm vào `.env` (local) hoặc Railway Variables:
 
@@ -123,7 +141,7 @@ GOOGLE_DRIVE_FOLDER_ID=your_folder_id
 GOOGLE_DRIVE_PROJECT_FOLDER_ID=your_project_folder_id
 ```
 
-## Bước 5: Cập nhật Code
+## Bước 6: Cập nhật Code
 
 Tôi sẽ cập nhật `googleDriveService.js` để hỗ trợ OAuth2 với Refresh Token.
 
@@ -133,7 +151,7 @@ Tôi sẽ cập nhật `googleDriveService.js` để hỗ trợ OAuth2 với Ref
 - Nếu mất, bạn phải thu hồi quyền và lấy lại:
   1. Vào [Google Account Permissions](https://myaccount.google.com/permissions)
   2. Tìm và xóa quyền của ứng dụng
-  3. Lặp lại Bước 3
+  3. Lặp lại Bước 4
 
 - Refresh Token sẽ bị vô hiệu hóa nếu:
   - Người dùng đổi mật khẩu
