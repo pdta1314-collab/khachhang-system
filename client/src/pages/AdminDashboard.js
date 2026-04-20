@@ -539,11 +539,12 @@ function AdminDashboard() {
   };
 
   const exportToExcel = (data) => {
-    const headers = ['ID', 'Họ tên', 'Trang phục', 'Ghi chú', 'Ngày đăng ký', 'Trạng thái', 'Số video'];
+    const headers = ['ID', 'Họ & Tên', 'SĐT', 'Trang phục', 'Ghi chú', 'Ngày đăng ký', 'Trạng thái', 'Số video'];
     const rows = data.map(c => [
       c.id,
       c.name,
-      c.outfit,
+      c.phone || '',
+      c.outfit || '',
       c.notes || '',
       new Date(c.created_at).toLocaleString('vi-VN'),
       c.status || 'Chờ chụp',
@@ -778,10 +779,10 @@ function AdminDashboard() {
                 />
               </th>
               <th>ID</th>
-              <th>Họ tên</th>
+              <th>Họ & Tên</th>
+              <th>SĐT</th>
               <th>Trạng thái</th>
               <th>Giờ đăng ký</th>
-              <th>Ảnh</th>
               <th>Video</th>
               <th>Thao tác</th>
               <th>Ghi chú</th>
@@ -805,6 +806,7 @@ function AdminDashboard() {
                 </td>
                 <td style={{ fontWeight: 'bold', fontSize: '16px' }}>{customer.id}</td>
                 <td>{customer.name}</td>
+                <td>{customer.phone || '-'}</td>
                 <td>
                   <span style={{
                     padding: '4px 8px',
@@ -819,11 +821,6 @@ function AdminDashboard() {
                 </td>
                 <td>{customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}</td>
                 <td>
-                  <span className={`status-badge ${customer.image_count > 0 ? 'status-success' : 'status-pending'}`}>
-                    {customer.image_count || 0} ảnh
-                  </span>
-                </td>
-                <td>
                   <span className={`status-badge ${customer.videoCount > 0 ? 'status-success' : 'status-pending'}`}>
                     {customer.videoCount || 0} video
                   </span>
@@ -836,13 +833,6 @@ function AdminDashboard() {
                       style={{ padding: '8px 16px', fontSize: '14px' }}
                     >
                       Xem
-                    </button>
-                    <button
-                      onClick={() => handleOpenImageModal(customer)}
-                      className="btn btn-secondary"
-                      style={{ padding: '8px 16px', fontSize: '14px' }}
-                    >
-                      Ảnh
                     </button>
                     <button
                       onClick={() => handleOpenVideoModal(customer)}

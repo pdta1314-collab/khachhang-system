@@ -358,6 +358,12 @@ exports.updateCustomer = async (req, res) => {
     res.json({ success: true, message: 'Đã cập nhật thông tin khách hàng' });
   } catch (error) {
     console.error('Lỗi cập nhật khách hàng:', error);
+
+    // Nếu lỗi do column không tồn tại, trả về thông báo cụ thể
+    if (error.message && error.message.includes('column')) {
+      return res.status(500).json({ error: 'Cột chưa được thêm vào database. Vui lòng chạy migration để thêm cột notes.' });
+    }
+
     res.status(500).json({ error: 'Lỗi server' });
   }
 };

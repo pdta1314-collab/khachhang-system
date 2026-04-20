@@ -3,6 +3,21 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+const pool = require('./config/database');
+
+// Migration: Thêm cột notes nếu chưa tồn tại
+const runMigrations = async () => {
+  try {
+    await pool.query(`
+      ALTER TABLE customers
+      ADD COLUMN IF NOT EXISTS notes TEXT
+    `);
+    console.log('✅ Migration: Đã kiểm tra và thêm cột notes (nếu chưa có)');
+  } catch (error) {
+    console.log('⚠️ Migration warning:', error.message);
+  }
+};
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -64,11 +79,14 @@ app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server đang chạy trên port ${PORT}`);
   console.log(`BASE_URL: ${BASE_URL}`);
   console.log(`RAILWAY_PUBLIC_DOMAIN: ${process.env.RAILWAY_PUBLIC_DOMAIN || 'không có'}`);
   if (RAILWAY_URL) {
     console.log('✅ Phát hiện Railway deployment - URL cố định');
   }
+
+  // Run migrations on startup
+  await runMigrations();
 });
