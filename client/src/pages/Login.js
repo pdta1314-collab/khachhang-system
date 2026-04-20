@@ -41,42 +41,28 @@ function Login() {
   };
 
   return (
-    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
-      {/* Video background */}
+    <>
+      {/* Video background - layer dưới cùng */}
       <video
         autoPlay
-        muted
         loop
+        muted
         playsInline
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          zIndex: 0
+          zIndex: -2
         }}
       >
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
 
-      {/* Image overlay */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundImage: 'url(/trumso.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        zIndex: 1,
-        opacity: 0.85
-      }} />
-
-      <div style={{ width: '100%', maxWidth: '400px', padding: '32px', position: 'relative', zIndex: 2 }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', position: 'relative', zIndex: 1 }}>
+      <div style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '24px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           Đăng nhập Admin
         </h1>
@@ -142,6 +128,7 @@ function Login() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
