@@ -731,6 +731,8 @@ exports.scanGoogleDriveVideos = async (req, res) => {
   try {
     // Lấy danh sách video từ Google Drive
     const driveFiles = await googleDriveService.getVideosFromFolder();
+    console.log('Total files from Google Drive:', driveFiles.length);
+    console.log('Files:', driveFiles.map(f => f.name));
 
     if (driveFiles.length === 0) {
       return res.json({
@@ -748,27 +750,33 @@ exports.scanGoogleDriveVideos = async (req, res) => {
 
     for (const file of driveFiles) {
       try {
+        console.log('Processing file:', file.name, 'ID:', file.id);
+        
         // Parse filename: ID1_T1.mp4, ID1_T2.mp4, ID2.mp4, etc.
         const match = file.name.match(/^ID(\d+)(?:_T(\d+))?\.\w+$/i);
         
         if (!match) {
+          console.log('File name does not match pattern:', file.name);
           errors.push({ filename: file.name, error: 'Tên file không đúng định dạng (VD: ID1.mp4, ID1_T1.mp4)' });
           continue;
         }
         
         const customerId = parseInt(match[1]);
         const takeNumber = match[2] || '1';
+        console.log('Matched - CustomerID:', customerId, 'TakeNumber:', takeNumber);
         
         // Kiểm tra khách hàng tồn tại
         const customer = await Customer.getById(customerId);
         if (!customer) {
+          console.log('Customer not found:', customerId);
           errors.push({ filename: file.name, error: `Không tìm thấy khách hàng ID ${customerId}` });
           continue;
         }
         
-        // Tạo link Google Drive trực tiếp (KHÔNG download)
-        // Dùng webContentLink nếu có, hoặc tạo link download trực tiếp
-        const googleDriveUrl = file.webContentLink || `https://drive.google.com/uc?export=download&id=${file.id}`;
+        // Tạo link Google Drive trực tiếp - LUÔN dùng format download trực tiếp
+        // webContentLink thường null nên không dùng
+        const googleDriveUrl = `https://drive.google.com/uc?export=download&id=${file.id}`;
+        console.log('Google Drive URL:', googleDriveUrl);
         
         // Thêm video vào danh sách (hỗ trợ nhiều video cho 1 khách hàng)
         const result = await Customer.addVideo(customerId, googleDriveUrl);

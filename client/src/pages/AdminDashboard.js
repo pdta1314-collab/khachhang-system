@@ -633,8 +633,8 @@ function AdminDashboard() {
                   </span>
                 </td>
                 <td>
-                  <span className={`status-badge ${customer.video_path ? 'status-success' : 'status-pending'}`}>
-                    {customer.video_path ? 'Đã có' : 'Chưa có'}
+                  <span className={`status-badge ${customer.videoCount > 0 ? 'status-success' : 'status-pending'}`}>
+                    {customer.videoCount || 0} video
                   </span>
                 </td>
                 <td>

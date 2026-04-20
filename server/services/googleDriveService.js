@@ -29,6 +29,8 @@ const getVideosFromFolder = async () => {
   const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'video/'+and+trashed=false&key=${apiKey}&fields=files(id,name,mimeType,size,webContentLink)`;
   
   const response = await axios.get(url);
+  console.log('Google Drive API response:', response.data);
+  console.log('Files found:', response.data.files?.length || 0);
   return response.data.files || [];
 };
 
