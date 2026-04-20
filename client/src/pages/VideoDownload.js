@@ -39,28 +39,50 @@ function VideoDownload() {
     }
   };
 
-  const handleDownload = (videoUrl, index) => {
+  const handleDownload = async (videoUrl, index) => {
     console.log('handleDownload called for video', index, videoUrl);
-    
+
     if (!videoUrl) {
       alert('Không tìm thấy link video. Vui lòng liên hệ ban tổ chức.');
       return;
     }
-    
+
     setIsDownloading(true);
-    
-    // Tạo link ẩn để tải video
-    const link = document.createElement('a');
-    link.href = videoUrl;
-    link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    setTimeout(() => {
-      setIsDownloading(false);
-    }, 1000);
+
+    try {
+      // Fetch video as blob to force download
+      const response = await fetch(videoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Tạo link ẩn để tải video
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        setIsDownloading(false);
+      }, 1000);
+    } catch (error) {
+      console.error('Download error:', error);
+      // Fallback: try direct link if fetch fails
+      const link = document.createElement('a');
+      link.href = videoUrl;
+      link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => {
+        setIsDownloading(false);
+      }, 1000);
+    }
   };
 
   const handleShare = async () => {
