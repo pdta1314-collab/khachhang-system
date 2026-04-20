@@ -11,40 +11,32 @@ Vì tổ chức của bạn đã chặn tạo Service Account key (`iam.disableS
 | **Token hết hạn** | Không | Refresh token dùng vĩnh viễn |
 | **Quyền hạn** | Theo role | Theo người dùng |
 
-## Bước 1: Tạo OAuth2 Credentials
+## Bước 1: Tạo OAuth2 Credentials (Web Application)
+
+**⚠️ Quan trọng: Phải chọn Web application (không phải Desktop app)**
 
 1. Truy cập [Google Cloud Console](https://console.cloud.google.com/)
 2. Vào **APIs & Services** → **Credentials**
 3. Click **Create Credentials** → **OAuth client ID**
-4. Chọn **Application type**: **Desktop app**
-5. Điền **Name**: `Drive Desktop Client`
-6. Click **Create**
-7. **Download JSON** (tên file dạng `client_secret_xxx.json`)
+4. Chọn **Application type**: **Web application** ⭐
+5. Điền **Name**: `Drive Web Client`
+6. Trong **Authorized redirect URIs** → **Add URI**:
+   ```
+   https://developers.google.com/oauthplayground
+   ```
+   > Nếu dùng script Node.js, thêm thêm:
+   > ```
+   > http://localhost:3000/oauth2callback
+   > ```
+7. Click **Create**
+8. **Download JSON** (tên file dạng `client_secret_xxx.json`)
 
 ## Bước 2: Kích hoạt Google Drive API
 
 1. Vào **APIs & Services** → **Library**
 2. Tìm **Google Drive API** → Click **Enable**
 
-## Bước 3: Cấu hình Redirect URI (Quan trọng - Fix lỗi redirect_uri_mismatch)
-
-**Lỗi `redirect_uri_mismatch` xảy ra khi URI chưa được thêm vào Google Cloud Console:**
-
-1. Vào **APIs & Services** → **Credentials**
-2. Tìm OAuth client ID bạn vừa tạo (`Drive Desktop Client`)
-3. Click **Edit** (biểu tượng bút)
-4. Trong mục **Authorized redirect URIs**, thêm:
-   ```
-   https://developers.google.com/oauthplayground
-   ```
-5. Click **Save**
-
-> ⚠️ **Nếu dùng Node.js script** (Cách 2 bên dưới), thêm thêm:
-> ```
-> http://localhost:3000/oauth2callback
-> ```
-
-## Bước 4: Lấy Refresh Token (Chỉ cần làm 1 lần)
+## Bước 3: Lấy Refresh Token (Chỉ cần làm 1 lần)
 
 ### Cách 1: Dùng tool online (Dễ nhất)
 
@@ -69,63 +61,22 @@ Vì tổ chức của bạn đã chặn tạo Service Account key (`iam.disableS
 
 7. Copy giá trị **Refresh token** (dài, bắt đầu bằng `1//`)
 
-### Cách 2: Dùng Node.js script (Tự động)
+### Cách 2: Dùng script có sẵn (Dễ nhất)
 
-Tạo file `get-refresh-token.js`:
+Tôi đã tạo sẵn file `get-refresh-token.js` trong project:
 
-```javascript
-const { google } = require('googleapis');
-const http = require('http');
-const url = require('url');
-const fs = require('fs');
-
-const CLIENT_ID = 'YOUR_CLIENT_ID';
-const CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
-const REDIRECT_URI = 'http://localhost:3000/oauth2callback';
-
-const oauth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  REDIRECT_URI
-);
-
-const scopes = ['https://www.googleapis.com/auth/drive'];
-
-const server = http.createServer(async (req, res) => {
-  const query = url.parse(req.url, true).query;
-  
-  if (query.code) {
-    try {
-      const { tokens } = await oauth2Client.getToken(query.code);
-      console.log('\n✅ Refresh Token:', tokens.refresh_token);
-      console.log('\nLưu token này vào biến môi trường GOOGLE_REFRESH_TOKEN');
-      
-      res.end('Đã lấy token thành công! Bạn có thể đóng tab này.');
-      server.close();
-      process.exit(0);
-    } catch (error) {
-      console.error('Lỗi:', error);
-      res.end('Lỗi: ' + error.message);
-    }
-  } else {
-    const authUrl = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: scopes,
-      prompt: 'consent'  // Quan trọng: để luôn nhận refresh_token
-    });
-    
-    res.writeHead(302, { Location: authUrl });
-    res.end();
-  }
-});
-
-console.log('Mở trình duyệt và truy cập: http://localhost:3000');
-server.listen(3000);
+```bash
+cd e:\KhachHang
+node get-refresh-token.js
 ```
 
-Chạy: `node get-refresh-token.js`
+Script sẽ hỏi CLIENT_ID và CLIENT_SECRET, sau đó tự động:
+1. Mở trình duyệt để đăng nhập
+2. Lấy authorization code
+3. Trả về Refresh Token
+4. Lưu vào file `.env.oauth2`
 
-## Bước 5: Cấu hình Biến Môi Trường
+## Bước 4: Cấu hình Biến Môi Trường
 
 Thêm vào `.env` (local) hoặc Railway Variables:
 
@@ -141,9 +92,11 @@ GOOGLE_DRIVE_FOLDER_ID=your_folder_id
 GOOGLE_DRIVE_PROJECT_FOLDER_ID=your_project_folder_id
 ```
 
-## Bước 6: Cập nhật Code
+## Bước 5: Triển khai lên Railway
 
-Tôi sẽ cập nhật `googleDriveService.js` để hỗ trợ OAuth2 với Refresh Token.
+1. Push code lên GitHub
+2. Railway Dashboard → Deploy
+3. Thêm các biến môi trường từ Bước 4
 
 ## Lưu ý Quan Trọng
 
@@ -151,7 +104,7 @@ Tôi sẽ cập nhật `googleDriveService.js` để hỗ trợ OAuth2 với Ref
 - Nếu mất, bạn phải thu hồi quyền và lấy lại:
   1. Vào [Google Account Permissions](https://myaccount.google.com/permissions)
   2. Tìm và xóa quyền của ứng dụng
-  3. Lặp lại Bước 4
+  3. Lặp lại Bước 3
 
 - Refresh Token sẽ bị vô hiệu hóa nếu:
   - Người dùng đổi mật khẩu
