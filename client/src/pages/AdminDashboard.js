@@ -814,7 +814,12 @@ function AdminDashboard() {
                 style={{ cursor: 'pointer', userSelect: 'none' }}
                 title="Click để sắp xếp"
               >
-                ID {sortField === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  ID
+                  <span style={{ fontSize: '12px', color: sortField === 'id' ? '#1976d2' : '#999' }}>
+                    ↕
+                  </span>
+                </span>
               </th>
               <th>Họ & Tên</th>
               <th>SĐT</th>
@@ -824,7 +829,12 @@ function AdminDashboard() {
                 style={{ cursor: 'pointer', userSelect: 'none' }}
                 title="Click để sắp xếp"
               >
-                Giờ đăng ký {sortField === 'registration_time' && (sortDirection === 'asc' ? '↑' : '↓')}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  Giờ đăng ký
+                  <span style={{ fontSize: '12px', color: sortField === 'registration_time' ? '#1976d2' : '#999' }}>
+                    ↕
+                  </span>
+                </span>
               </th>
               <th>Video</th>
               <th>Thao tác</th>
