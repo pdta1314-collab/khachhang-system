@@ -523,28 +523,6 @@ function AdminDashboard() {
     }
   };
 
-  const exportToCSV = () => {
-    const headers = ['ID', 'Họ tên', 'Trang phục', 'Ngày đăng ký', 'Có video'];
-    const rows = customers.map(c => [
-      c.id,
-      c.name,
-      c.outfit,
-      new Date(c.created_at).toLocaleString('vi-VN'),
-      c.video_path ? 'Có' : 'Chưa'
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `khach-hang-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-  };
-
   const filteredCustomers = customers.filter(c => {
     // Search filter
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -628,9 +606,6 @@ function AdminDashboard() {
             </p>
           </div>
           <div className="admin-nav" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button onClick={exportToCSV} className="btn btn-primary">
-              Xuất CSV
-            </button>
             <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary">
               {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
             </button>

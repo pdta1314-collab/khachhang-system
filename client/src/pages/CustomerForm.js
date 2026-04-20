@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +14,15 @@ function CustomerForm() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
   const [customerData, setCustomerData] = useState(null);
+
+  // Project management states
+  const [projects, setProjects] = useState([]);
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [showProjectList, setShowProjectList] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +67,73 @@ function CustomerForm() {
     setSuccess(false);
     setCustomerData(null);
     setError(null);
+  };
+
+  // Fetch projects from API
+  const fetchProjects = async () => {
+    try {
+      setLoadingProjects(true);
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.get(`${API_URL}/projects`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (response.data.success) {
+        setProjects(response.data.projects || []);
+      }
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  // Create new project
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) {
+      setError('Vui lòng nhập tên dự án');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
+      const response = await axios.post(`${API_URL}/projects`, 
+        { name: newProjectName.trim() },
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+
+      if (response.data.success) {
+        setNewProjectName('');
+        setShowCreateProject(false);
+        setShowProjectMenu(false);
+        fetchProjects(); // Refresh list
+        
+        // Auto export CSV
+        if (response.data.project?.id) {
+          await axios.post(`${API_URL}/projects/${response.data.project.id}/export-csv`, {}, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+        }
+        
+        alert('Đã tạo dự án mới thành công và xuất CSV!');
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Có lỗi khi tạo dự án');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Select project
+  const handleSelectProject = (project) => {
+    setSelectedProject(project);
+    setShowProjectList(false);
+    setShowProjectMenu(false);
+    alert(`Đã chọn dự án: ${project.name}`);
   };
 
   return (
@@ -142,14 +218,82 @@ function CustomerForm() {
                 )}
               </button>
 
-              <button 
-                type="button"
-                onClick={() => navigate('/admin')}
-                className="btn btn-secondary"
-                style={{ width: '100%', marginTop: '10px', padding: '12px' }}
-              >
-                🔐 Vào trang Admin
-              </button>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button 
+                  type="button"
+                  onClick={() => navigate('/admin')}
+                  className="btn btn-secondary"
+                  style={{ flex: 1, padding: '12px' }}
+                >
+                  🔐 Vào trang Admin
+                </button>
+
+                {/* Nút DỰ ÁN với dropdown */}
+                <div style={{ position: 'relative' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setShowProjectMenu(!showProjectMenu)}
+                    className="btn btn-primary"
+                    style={{ 
+                      padding: '12px 20px',
+                      background: selectedProject ? '#28a745' : '#667eea'
+                    }}
+                  >
+                    📁 DỰ ÁN {selectedProject && `(${selectedProject.name})`} ▼
+                  </button>
+
+                  {/* Dropdown menu */}
+                  {showProjectMenu && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: '5px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                      minWidth: '200px',
+                      zIndex: 1000,
+                      border: '1px solid #e0e0e0'
+                    }}>
+                      <div 
+                        onClick={() => {
+                          setShowCreateProject(true);
+                          setShowProjectList(false);
+                        }}
+                        style={{
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #f0f0f0',
+                          color: '#333',
+                          fontWeight: '500'
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = '#f8f9fa'}
+                        onMouseLeave={(e) => e.target.style.background = 'white'}
+                      >
+                        ➕ Tạo dự án mới
+                      </div>
+                      <div 
+                        onClick={() => {
+                          setShowProjectList(true);
+                          setShowCreateProject(false);
+                          fetchProjects();
+                        }}
+                        style={{
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          color: '#333',
+                          fontWeight: '500'
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = '#f8f9fa'}
+                        onMouseLeave={(e) => e.target.style.background = 'white'}
+                      >
+                        📂 Dự án đã tạo {projects.length > 0 && `(${projects.length})`}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </form>
           </>
         ) : (
@@ -250,6 +394,157 @@ function CustomerForm() {
               Đăng ký khách hàng mới
             </button>
           </>
+        )}
+
+        {/* Modal Tạo dự án mới */}
+        {showCreateProject && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }} onClick={() => setShowCreateProject(false)}>
+            <div style={{
+              background: 'white',
+              padding: '24px',
+              borderRadius: '12px',
+              maxWidth: '400px',
+              width: '90%'
+            }} onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ marginBottom: '20px', textAlign: 'center' }}>➕ Tạo dự án mới</h3>
+              
+              <div className="form-group">
+                <label>Tên dự án</label>
+                <input
+                  type="text"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  placeholder="Nhập tên dự án (VD: TrumSo)"
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '2px solid #e0e0e0' }}
+                />
+              </div>
+
+              <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+                📅 Ngày tháng năm sẽ tự động tạo: {new Date().toLocaleDateString('vi-VN')}
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button 
+                  onClick={() => setShowCreateProject(false)}
+                  style={{ 
+                    flex: 1, 
+                    padding: '12px', 
+                    background: '#95a5a6', 
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={handleCreateProject}
+                  disabled={loading || !newProjectName.trim()}
+                  style={{ 
+                    flex: 1, 
+                    padding: '12px', 
+                    background: loading ? '#ccc' : '#667eea', 
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: loading || !newProjectName.trim() ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {loading ? 'Đang tạo...' : 'Tạo dự án'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Danh sách dự án */}
+        {showProjectList && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }} onClick={() => setShowProjectList(false)}>
+            <div style={{
+              background: 'white',
+              padding: '24px',
+              borderRadius: '12px',
+              maxWidth: '500px',
+              width: '90%',
+              maxHeight: '80vh',
+              overflow: 'auto'
+            }} onClick={(e) => e.stopPropagation()}>
+              <h3 style={{ marginBottom: '20px', textAlign: 'center' }}>📂 Dự án đã tạo</h3>
+              
+              {loadingProjects ? (
+                <p style={{ textAlign: 'center', color: '#666' }}>Đang tải...</p>
+              ) : projects.length === 0 ? (
+                <p style={{ textAlign: 'center', color: '#666' }}>Chưa có dự án nào</p>
+              ) : (
+                <div>
+                  {projects.map((project) => (
+                    <div 
+                      key={project.id}
+                      onClick={() => handleSelectProject(project)}
+                      style={{
+                        padding: '12px',
+                        marginBottom: '8px',
+                        background: selectedProject?.id === project.id ? '#d4edda' : '#f8f9fa',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        border: selectedProject?.id === project.id ? '2px solid #28a745' : '1px solid #e0e0e0'
+                      }}
+                    >
+                      <p style={{ fontWeight: 'bold', color: '#333' }}>{project.name}</p>
+                      <p style={{ fontSize: '12px', color: '#666' }}>
+                        📁 {project.date_folder_name}
+                      </p>
+                      <p style={{ fontSize: '11px', color: '#999' }}>
+                        Tạo: {new Date(project.created_at).toLocaleDateString('vi-VN')}
+                      </p>
+                      {selectedProject?.id === project.id && (
+                        <span style={{ color: '#28a745', fontSize: '12px', fontWeight: 'bold' }}>✓ Đang chọn</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button 
+                onClick={() => setShowProjectList(false)}
+                style={{ 
+                  width: '100%',
+                  padding: '12px', 
+                  background: '#95a5a6', 
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  marginTop: '20px'
+                }}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

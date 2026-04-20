@@ -39,10 +39,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 // Import routes
 const customerRoutes = require('./routes/customers');
 const adminRoutes = require('./routes/admin');
+const projectRoutes = require('./routes/projects');
 
 // Use routes
 app.use('/api/customers', customerRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/projects', projectRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
