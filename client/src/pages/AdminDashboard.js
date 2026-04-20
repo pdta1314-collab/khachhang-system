@@ -55,6 +55,9 @@ function AdminDashboard() {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [googleDriveFolders, setGoogleDriveFolders] = useState([]);
   const [loadingFolders, setLoadingFolders] = useState(false);
+  const [googleSheetUrl, setGoogleSheetUrl] = useState(null);
+  const [showSheetModal, setShowSheetModal] = useState(false);
+  const [syncingSheet, setSyncingSheet] = useState(false);
   
   // Add log function - logs mới nhất ở cuối để auto-scroll đúng
   const addLog = (message, type = 'info') => {
@@ -97,21 +100,65 @@ function AdminDashboard() {
     setSelectedProjectFolder(folder);
     setShowProjectModal(false);
     addLog(`📁 Đã chọn folder: ${folder.name}`, 'info');
-    
+
+    // Create Google Sheets for the project
+    try {
+      addLog(`🔄 Đang tạo Google Sheets...`, 'info');
+      const sheetResponse = await axios.post(`${API_URL}/google-drive/create-sheet`,
+        { folderId: folder.id, fileName: `${folder.name}_customers.xlsx` },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (sheetResponse.data.success) {
+        setGoogleSheetUrl(sheetResponse.data.sheet.url);
+        setShowSheetModal(true);
+        addLog(`✅ Đã tạo Google Sheets`, 'success');
+      }
+    } catch (err) {
+      addLog(`⚠️ Lỗi tạo Google Sheets: ${err.message}`, 'warning');
+    }
+
     // Auto sync videos from selected folder
     try {
       addLog(`🔄 Đang sync video từ folder ${folder.name}...`, 'info');
-      const response = await axios.post(`${API_URL}/google-drive/sync-folder`, 
+      const response = await axios.post(`${API_URL}/google-drive/sync-folder`,
         { folderId: folder.id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       if (response.data.success) {
         addLog(`✅ Đã sync ${response.data.linked || 0} video`, 'success');
         fetchCustomers(token);
       }
     } catch (err) {
       addLog(`❌ Lỗi sync: ${err.message}`, 'error');
+    }
+  };
+
+  // Sync data from Google Sheets
+  const handleSyncSheet = async () => {
+    const token = localStorage.getItem('adminToken');
+    setSyncingSheet(true);
+
+    try {
+      addLog(`🔄 Đang sync dữ liệu từ Google Sheets...`, 'info');
+      const spreadsheetId = googleSheetUrl.match(/\/d\/(.+)$/)[1];
+
+      const response = await axios.post(`${API_URL}/google-drive/sync-sheet`,
+        { spreadsheetId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        addLog(`✅ Đã sync ${response.data.updated} khách hàng`, 'success');
+        fetchCustomers(token);
+        alert(`Đã sync ${response.data.updated} khách hàng thành công!`);
+      }
+    } catch (err) {
+      addLog(`❌ Lỗi sync: ${err.message}`, 'error');
+      alert('Lỗi khi sync dữ liệu: ' + err.message);
+    } finally {
+      setSyncingSheet(false);
     }
   };
 
@@ -1427,6 +1474,78 @@ function AdminDashboard() {
                 <li>Xóa video chỉ xóa link trong hệ thống, không xóa file gốc trên Google Drive</li>
                 <li>Để thêm video mới, upload file vào Google Drive với tên định dạng <strong>ID{selectedCustomerForVideos.id}_T1.mp4</strong></li>
               </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal embed Google Sheets */}
+      {showSheetModal && googleSheetUrl && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }} onClick={() => setShowSheetModal(false)}>
+          <div style={{
+            background: 'white',
+            padding: '24px',
+            borderRadius: '12px',
+            maxWidth: '95%',
+            width: '1200px',
+            height: '80vh',
+            display: 'flex',
+            flexDirection: 'column'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0 }}>📊 Google Sheets - {selectedProjectFolder?.name}</h3>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={handleSyncSheet}
+                  disabled={syncingSheet}
+                  style={{
+                    padding: '8px 16px',
+                    background: syncingSheet ? '#ccc' : '#667eea',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: syncingSheet ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {syncingSheet ? 'Đang sync...' : '🔄 Sync Database'}
+                </button>
+                <button
+                  onClick={() => setShowSheetModal(false)}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <iframe
+                src={`${googleSheetUrl}?rm=minimal`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  borderRadius: '8px'
+                }}
+                title="Google Sheets"
+              />
             </div>
           </div>
         </div>

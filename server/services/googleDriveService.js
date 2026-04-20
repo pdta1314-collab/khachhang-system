@@ -323,7 +323,7 @@ const createEmptyCSVFile = async (fileName, parentFolderId) => {
 // Cập nhật file CSV (dùng Service Account hoặc OAuth2)
 const updateCSVFile = async (folderId, fileName, content) => {
   const drive = getAuthenticatedDriveClient();
-  
+
   if (!drive) {
     console.log('⚠️ Authentication chưa cấu hình. Bỏ qua cập nhật CSV.');
     return { success: false, note: 'Authentication chưa cấu hình' };
@@ -335,9 +335,9 @@ const updateCSVFile = async (folderId, fileName, content) => {
       q: `'${folderId}' in parents and name='${fileName}' and mimeType='text/csv' and trashed=false`,
       fields: 'files(id,name)'
     });
-    
+
     const existingFile = searchResponse.data.files?.[0];
-    
+
     if (existingFile) {
       // Cập nhật file hiện có
       await drive.files.update({
@@ -363,11 +363,93 @@ const updateCSVFile = async (folderId, fileName, content) => {
       });
       console.log('✅ Đã tạo file CSV mới:', fileName);
     }
-    
+
     return { success: true };
   } catch (error) {
     console.error('❌ Lỗi cập nhật file CSV:', error.message);
     return { success: false, error: error.message };
+  }
+};
+
+// Tạo Google Sheets rỗng (dùng OAuth2)
+const createEmptyGoogleSheet = async (fileName, parentFolderId) => {
+  const drive = getOAuth2DriveClient();
+
+  if (!drive) {
+    console.log('⚠️ OAuth2 chưa được cấu hình. Không thể tạo Google Sheets.');
+    throw new Error('OAuth2 chưa được cấu hình - Cần GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN');
+  }
+
+  try {
+    const sheets = google.sheets({ version: 'v4', auth: getOAuth2DriveClient().auth });
+
+    // Tạo Google Sheet rỗng với header
+    const spreadsheet = await sheets.spreadsheets.create({
+      resource: {
+        properties: {
+          title: fileName
+        },
+        sheets: [{
+          properties: {
+            title: 'Khách hàng'
+          },
+          data: [{
+            rowData: [{
+              values: [
+                { userEnteredValue: { stringValue: 'ID' } },
+                { userEnteredValue: { stringValue: 'Họ tên' } },
+                { userEnteredValue: { stringValue: 'Trang phục' } },
+                { userEnteredValue: { stringValue: 'Số điện thoại' } },
+                { userEnteredValue: { stringValue: 'Ngày đăng ký' } },
+                { userEnteredValue: { stringValue: 'Trạng thái' } },
+                { userEnteredValue: { stringValue: 'Số video' } }
+              ]
+            }]
+          }]
+        }]
+      }
+    });
+
+    const spreadsheetId = spreadsheet.data.spreadsheetId;
+
+    // Di chuyển file vào folder cha
+    await drive.files.update({
+      fileId: spreadsheetId,
+      addParents: parentFolderId
+    });
+
+    console.log('✅ Đã tạo Google Sheets:', fileName, 'ID:', spreadsheetId);
+    return {
+      id: spreadsheetId,
+      name: fileName,
+      url: `https://docs.google.com/spreadsheets/d/${spreadsheetId}`
+    };
+  } catch (error) {
+    console.error('❌ Lỗi tạo Google Sheets:', error.message);
+    throw new Error('Không thể tạo Google Sheets: ' + error.message);
+  }
+};
+
+// Đọc dữ liệu từ Google Sheets
+const readGoogleSheetData = async (spreadsheetId) => {
+  const sheets = google.sheets({ version: 'v4', auth: getOAuth2DriveClient().auth });
+
+  if (!sheets) {
+    throw new Error('OAuth2 chưa được cấu hình');
+  }
+
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'Khách hàng!A:G'
+    });
+
+    const rows = response.data.values || [];
+    // Bỏ header row
+    return rows.slice(1);
+  } catch (error) {
+    console.error('❌ Lỗi đọc Google Sheets:', error.message);
+    throw new Error('Không thể đọc Google Sheets: ' + error.message);
   }
 };
 
@@ -382,6 +464,9 @@ module.exports = {
   updateCSVFile,
   getVideosFromProjectFolder,
   getProjectFolderId,
+  getApiKey,
+  createEmptyGoogleSheet,
+  readGoogleSheetData,
   getDriveClient,
   getOAuth2DriveClient,
   getAuthenticatedDriveClient,
