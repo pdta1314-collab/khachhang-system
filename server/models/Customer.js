@@ -103,6 +103,34 @@ class Customer {
     }
   }
 
+  // Thêm video mới vào danh sách (hỗ trợ nhiều video)
+  static async addVideo(id, videoUrl) {
+    const customer = await this.getById(id);
+    let videos = [];
+    
+    if (customer && customer.video_path) {
+      try {
+        videos = JSON.parse(customer.video_path);
+        if (!Array.isArray(videos)) videos = [videos];
+      } catch (e) {
+        videos = [customer.video_path];
+      }
+    }
+    
+    // Thêm video mới nếu chưa có
+    if (!videos.includes(videoUrl)) {
+      videos.push(videoUrl);
+    }
+    
+    const sql = 'UPDATE customers SET video_path = $1 WHERE id = $2';
+    try {
+      await pool.query(sql, [JSON.stringify(videos), id]);
+      return { changes: 1, videoCount: videos.length };
+    } catch (err) {
+      throw err;
+    }
+  }
+
   static async updateVideo(id, videoPath) {
     const sql = 'UPDATE customers SET video_path = $1 WHERE id = $2';
     

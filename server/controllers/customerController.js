@@ -6,16 +6,30 @@ const path = require('path');
 const fs = require('fs');
 const googleDriveService = require('../services/googleDriveService');
 
-// Trả về video URL - nhận diện link Google Drive hoặc local path
-const getVideoPath = (videoPath) => {
-  if (!videoPath) return null;
-  // Nếu là link Google Drive (bắt đầu bằng http), trả về nguyên vẹn
-  if (videoPath.startsWith('http')) {
-    return videoPath;
+// Trả về danh sách video URLs (hỗ trợ nhiều video)
+const getVideoPaths = (videoPath) => {
+  if (!videoPath) return [];
+  try {
+    const parsed = JSON.parse(videoPath);
+    if (Array.isArray(parsed)) return parsed;
+    return [parsed];
+  } catch (e) {
+    // Nếu không phải JSON, trả về single item
+    if (videoPath.startsWith('http')) return [videoPath];
+    const match = videoPath.match(/uploads[\\/](.+)$/);
+    return match ? [`/uploads/${match[1]}`] : [`/uploads/${path.basename(videoPath)}`];
   }
-  // Nếu là local path, chỉ lấy phần uploads/filename
-  const match = videoPath.match(/uploads[\\/](.+)$/);
-  return match ? `/uploads/${match[1]}` : `/uploads/${path.basename(videoPath)}`;
+};
+
+// Đếm số video của khách hàng
+const getVideoCount = (videoPath) => {
+  if (!videoPath) return 0;
+  try {
+    const parsed = JSON.parse(videoPath);
+    return Array.isArray(parsed) ? parsed.length : 1;
+  } catch (e) {
+    return videoPath ? 1 : 0;
+  }
 };
 
 // Lấy base URL từ request headers cho QR code
@@ -130,7 +144,8 @@ exports.getCustomer = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const videoUrl = getVideoPath(customer.video_path);
+    const videoUrls = getVideoPaths(customer.video_path);
+    const videoCount = getVideoCount(customer.video_path);
 
     res.json({
       success: true,
@@ -143,8 +158,10 @@ exports.getCustomer = async (req, res) => {
         status: customer.status,
         registrationTime: customer.registration_time,
         createdAt: customer.created_at,
-        hasVideo: !!customer.video_path,
-        videoUrl
+        hasVideo: videoCount > 0,
+        videoCount,
+        videoUrls,
+        videoUrl: videoUrls[0] || null // backward compatibility
       }
     });
   } catch (error) {
@@ -163,8 +180,9 @@ exports.getCustomerByUniqueId = async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
     }
 
-    const videoUrl = getVideoPath(customer.video_path);
-    console.log('getCustomerByUniqueId - videoUrl:', videoUrl, 'video_path:', customer.video_path);
+    const videoUrls = getVideoPaths(customer.video_path);
+    const videoCount = getVideoCount(customer.video_path);
+    console.log('getCustomerByUniqueId - videoUrls:', videoUrls, 'videoCount:', videoCount);
 
     res.json({
       success: true,
@@ -177,8 +195,10 @@ exports.getCustomerByUniqueId = async (req, res) => {
         status: customer.status,
         registrationTime: customer.registration_time,
         createdAt: customer.created_at,
-        hasVideo: !!customer.video_path,
-        videoUrl
+        hasVideo: videoCount > 0,
+        videoCount,
+        videoUrls,
+        videoUrl: videoUrls[0] || null // backward compatibility
       }
     });
   } catch (error) {
@@ -192,12 +212,18 @@ exports.getAllCustomers = async (req, res) => {
   try {
     const customers = await Customer.getAll();
     
-    const customersWithUrls = customers.map(c => ({
-      ...c,
-      videoUrl: c.video_path ? `/uploads/${path.basename(c.video_path)}` : null,
-      hasVideo: !!c.video_path,
-      hasImages: c.image_count > 0
-    }));
+    const customersWithUrls = customers.map(c => {
+      const videoCount = getVideoCount(c.video_path);
+      const videoUrls = getVideoPaths(c.video_path);
+      return {
+        ...c,
+        videoCount,
+        videoUrls,
+        videoUrl: videoUrls[0] || null,
+        hasVideo: videoCount > 0,
+        hasImages: c.image_count > 0
+      };
+    });
 
     res.json({
       success: true,
@@ -744,8 +770,8 @@ exports.scanGoogleDriveVideos = async (req, res) => {
         // Dùng webContentLink nếu có, hoặc tạo link download trực tiếp
         const googleDriveUrl = file.webContentLink || `https://drive.google.com/uc?export=download&id=${file.id}`;
         
-        // Cập nhật video_path với link Google Drive
-        await Customer.updateVideo(customerId, googleDriveUrl);
+        // Thêm video vào danh sách (hỗ trợ nhiều video cho 1 khách hàng)
+        const result = await Customer.addVideo(customerId, googleDriveUrl);
         
         linkedCount++;
         linkedFiles.push({

@@ -39,37 +39,33 @@ function VideoDownload() {
     }
   };
 
-  const handleDownload = async () => {
-    console.log('handleDownload called');
-    console.log('customer:', customer);
-    console.log('videoUrl:', customer?.videoUrl);
+  const handleDownload = (videoUrl, index) => {
+    console.log('handleDownload called for video', index, videoUrl);
     
-    if (!customer?.videoUrl) {
-      console.error('No video URL available');
+    if (!videoUrl) {
       alert('Không tìm thấy link video. Vui lòng liên hệ ban tổ chức.');
       return;
     }
     
-    setIsDownloading(true);
-    
-    try {
-      console.log('Downloading video from:', customer.videoUrl);
+    // Cách tải tốt nhất cho cả mobile và desktop
+    if (videoUrl.includes('drive.google.com')) {
+      // Với Google Drive, tạo iframe ẩn để force download
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = videoUrl;
+      document.body.appendChild(iframe);
+      setTimeout(() => document.body.removeChild(iframe), 5000);
       
-      // Kiểm tra nếu là link Google Drive
-      if (customer.videoUrl.includes('drive.google.com')) {
-        // Mở link download trực tiếp của Google Drive
-        window.open(customer.videoUrl, '_blank');
-        alert('Video đang tải. Nếu không tự động tải, vui lòng chọn \"Download\" trong trang Google Drive.');
-      } else {
-        // Link thường - mở trực tiếp
-        window.open(customer.videoUrl, '_blank');
-        alert('Video đã mở trong tab mới. Bạn có thể tải xuống từ trình duyệt.');
-      }
-    } catch (err) {
-      console.error('Download error:', err);
-      alert('Lỗi khi tải video: ' + err.message);
-    } finally {
-      setIsDownloading(false);
+      alert('Video ' + (index + 1) + ' đang được tải. Vui lòng kiểm tra thông báo tải xuống của trình duyệt.');
+    } else {
+      // Link trực tiếp - dùng thẻ a với download
+      const link = document.createElement('a');
+      link.href = videoUrl;
+      link.download = `video_${customer?.name}_${index + 1}.mp4`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -184,7 +180,7 @@ function VideoDownload() {
           </p>
         </div>
 
-        {customer?.hasVideo ? (
+        {customer?.videoCount > 0 ? (
           <div>
             {/* Hiển thị số lượng video */}
             <div style={{ 
@@ -197,47 +193,66 @@ function VideoDownload() {
               color: '#155724',
               textAlign: 'center'
             }}>
-              <strong>✅ Video đã sẵn sàng để tải xuống</strong>
+              <strong>✅ Có {customer.videoCount} video đã sẵn sàng để tải</strong>
             </div>
 
-            {/* Nút Tải về - mở video trong tab mới */}
-            <button 
-              onClick={handleDownload}
-              disabled={isDownloading}
-              style={{
-                width: '100%',
-                padding: '14px',
-                backgroundColor: isDownloading ? '#ccc' : '#2563eb',
-                color: 'white',
-                border: 'none',
+            {/* Danh sách các video */}
+            {customer.videoUrls?.map((videoUrl, index) => (
+              <div key={index} style={{
+                marginBottom: '16px',
+                padding: '16px',
+                backgroundColor: '#f8f9fa',
                 borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: isDownloading ? 'not-allowed' : 'pointer',
-                marginBottom: '12px'
-              }}
-            >
-              {isDownloading ? 'Đang tải...' : '📥 Tải video về máy'}
-            </button>
+                border: '1px solid #dee2e6'
+              }}>
+                <div style={{ 
+                  marginBottom: '12px', 
+                  fontWeight: 'bold',
+                  color: '#333'
+                }}>
+                  🎬 Video {index + 1} {customer.videoCount > 1 ? `/${customer.videoCount}` : ''}
+                </div>
+                
+                {/* Nút Tải về cho từng video */}
+                <button 
+                  onClick={() => handleDownload(videoUrl, index)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📥 Tải video {index + 1}
+                </button>
+              </div>
+            ))}
 
-            {/* Nút Chia sẻ - chia sẻ link video */}
-            <button 
-              onClick={handleShare}
-              disabled={isDownloading}
-              style={{
-                width: '100%',
-                padding: '14px',
-                backgroundColor: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: isDownloading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              📤 Chia sẻ video
-            </button>
+            {/* Nút Chia sẻ - chia sẻ link tất cả video */}
+            {customer.videoCount === 1 && (
+              <button 
+                onClick={handleShare}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  marginTop: '12px'
+                }}
+              >
+                📤 Chia sẻ video
+              </button>
+            )}
 
             {/* Hướng dẫn */}
             <div style={{ 
@@ -251,12 +266,12 @@ function VideoDownload() {
             }}>
               <strong style={{ fontSize: '14px', marginBottom: '8px', display: 'block' }}>📱 Hướng dẫn tải video:</strong>
               <ol style={{ marginTop: '8px', paddingLeft: '20px', marginBottom: '8px' }}>
-                <li style={{ marginBottom: '6px' }}>Bấm nút <strong>"📥 Tải video về máy"</strong></li>
-                <li style={{ marginBottom: '6px' }}>Video sẽ mở trong tab mới</li>
-                <li style={{ marginBottom: '6px' }}>Trên trình duyệt, bấm nút <strong>Tải xuống</strong> hoặc <strong>Download</strong></li>
-                <li style={{ marginBottom: '6px' }}>Chọn vị trí lưu video trên điện thoại/máy tính</li>
+                <li style={{ marginBottom: '6px' }}>Bấm nút <strong>"📥 Tải video"</strong> cho từng video</li>
+                <li style={{ marginBottom: '6px' }}>Trên mobile: Video sẽ tải tự động hoặc mở trong trình duyệt</li>
+                <li style={{ marginBottom: '6px' }}>Trên máy tính: Kiểm tra thư mục Downloads</li>
+                <li style={{ marginBottom: '6px' }}>Nếu không tải được, giữ nút và chọn "Tải liên kết"</li>
               </ol>
-              <p style={{ marginTop: '8px', marginBottom: '4px' }}><strong>💡 Chia sẻ video:</strong> Bấm nút <strong>"📤 Chia sẻ video"</strong> để gửi link cho bạn bè hoặc người thân.</p>
+              <p style={{ marginTop: '8px', marginBottom: '4px' }}><strong>💡 Lưu ý:</strong> Mỗi video cần tải riêng lẻ. Vui lòng đợi video 1 tải xong trước khi tải video 2.</p>
             </div>
 
           </div>
