@@ -540,16 +540,15 @@ function AdminDashboard() {
   };
 
   const exportToExcel = (data) => {
-    const headers = ['ID', 'Họ & Tên', 'SĐT', 'Trang phục', 'Ghi chú', 'Ngày đăng ký', 'Trạng thái', 'Số video'];
+    const headers = ['ID', 'Họ & Tên', 'SĐT', 'Ngày đăng ký', 'Giờ đăng ký', 'Số video', 'Ghi chú'];
     const rows = data.map(c => [
       c.id,
       c.name,
       c.phone || '',
-      c.outfit || '',
-      c.notes || '',
-      new Date(c.created_at).toLocaleString('vi-VN'),
-      c.status || 'Chờ chụp',
-      c.videoCount || 0
+      new Date(c.created_at).toLocaleDateString('vi-VN'),
+      new Date(c.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      c.videoCount || 0,
+      c.notes || ''
     ]);
 
     // Tạo worksheet
