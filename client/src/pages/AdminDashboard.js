@@ -753,6 +753,40 @@ function AdminDashboard() {
         </div>
       </div>
 
+      {/* Status Statistics */}
+      <div className="card" style={{ marginBottom: '20px', padding: '15px' }}>
+        <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: 'bold' }}>📊 Thống kê theo trạng thái</h4>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
+          <div style={{ padding: '10px', background: '#ef5350', borderRadius: '8px', color: 'white' }}>
+            <div style={{ fontSize: '14px', marginBottom: '5px' }}>🔴 Đang chụp</div>
+            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+              {customers.filter(c => c.status === 'Đang chụp').length} khách
+            </div>
+            <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.9 }}>
+              ID: {customers.filter(c => c.status === 'Đang chụp').map(c => c.id).join(', ') || '-'}
+            </div>
+          </div>
+          <div style={{ padding: '10px', background: '#42a5f5', borderRadius: '8px', color: 'white' }}>
+            <div style={{ fontSize: '14px', marginBottom: '5px' }}>🔵 Đang chờ</div>
+            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+              {customers.filter(c => c.status === 'Đang chờ').length} khách
+            </div>
+            <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.9 }}>
+              ID: {customers.filter(c => c.status === 'Đang chờ').map(c => c.id).join(', ') || '-'}
+            </div>
+          </div>
+          <div style={{ padding: '10px', background: '#9e9e9e', borderRadius: '8px', color: 'white' }}>
+            <div style={{ fontSize: '14px', marginBottom: '5px' }}>⚪ Đã chụp xong</div>
+            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+              {customers.filter(c => c.status === 'Đã chụp xong').length} khách
+            </div>
+            <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.9 }}>
+              ID: {customers.filter(c => c.status === 'Đã chụp xong').map(c => c.id).join(', ') || '-'}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Delete selected button */}
       {selectedIds.length > 0 && (
         <div style={{ marginBottom: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
