@@ -79,7 +79,7 @@ function CustomerForm() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(255, 255, 255, 0.85)', borderRadius: '16px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.3)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.4)' }}>
+      <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(255, 255, 255, 0.25)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.1), inset 0 0 20px rgba(255,255,255,0.2)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', border: '1px solid rgba(255,255,255,0.3)' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
@@ -200,7 +200,7 @@ function CustomerForm() {
             </div>
 
             {/* Hiển thị ID lớn */}
-            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(102, 126, 234, 0.85)', borderRadius: '12px', color: 'white', textAlign: 'center', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.3)' }}>
+            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(102, 126, 234, 0.6)', borderRadius: '16px', color: 'white', textAlign: 'center', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.4)' }}>
               <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>
                 Số ID của bạn
               </p>
@@ -212,7 +212,7 @@ function CustomerForm() {
               </p>
             </div>
 
-            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(248, 249, 250, 0.7)', borderRadius: '12px', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.5)' }}>
+            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(248, 249, 250, 0.4)', borderRadius: '16px', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.5)' }}>
               <p style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <strong>Thông tin đã đăng ký:</strong>
               </p>

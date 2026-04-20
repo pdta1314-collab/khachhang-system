@@ -120,7 +120,7 @@ function VideoDownload() {
   if (loading) {
     return (
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-        <div style={{ background: 'rgba(255, 255, 255, 0.85)', borderRadius: '16px', padding: '40px', boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.3)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.4)' }}>
+        <div style={{ background: 'rgba(255, 255, 255, 0.25)', borderRadius: '20px', padding: '40px', boxShadow: '0 8px 32px rgba(0,0,0,0.1), inset 0 0 20px rgba(255,255,255,0.2)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', border: '1px solid rgba(255,255,255,0.3)' }}>
           <div className="loading">
             <div className="spinner"></div>
           </div>
@@ -132,7 +132,7 @@ function VideoDownload() {
   if (error) {
     return (
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-        <div style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.85)', borderRadius: '16px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.3)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.4)' }}>
+        <div style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.25)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.1), inset 0 0 20px rgba(255,255,255,0.2)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', border: '1px solid rgba(255,255,255,0.3)' }}>
           <div className="error-message">
             <h2 style={{ marginBottom: '16px' }}>Lỗi</h2>
             <p>{error}</p>
@@ -162,12 +162,12 @@ function VideoDownload() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(255, 255, 255, 0.85)', borderRadius: '16px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.3)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.4)' }}>
+      <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(255, 255, 255, 0.25)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.1), inset 0 0 20px rgba(255,255,255,0.2)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', border: '1px solid rgba(255,255,255,0.3)' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>
           TRANG TẢI VIDEO
         </h1>
 
-        <div style={{ marginBottom: '24px', padding: '20px', background: 'rgba(248, 249, 250, 0.7)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.5)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)' }}>
+        <div style={{ marginBottom: '24px', padding: '20px', background: 'rgba(248, 249, 250, 0.35)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
           <p style={{ marginBottom: '12px' }}>
             <strong>Họ tên:</strong> {customer?.name}
           </p>
@@ -192,15 +192,15 @@ function VideoDownload() {
             {/* Hiển thị số lượng video */}
             <div style={{
               padding: '16px',
-              backgroundColor: 'rgba(212, 237, 218, 0.8)',
-              border: '1px solid rgba(40, 167, 69, 0.5)',
-              borderRadius: '12px',
+              backgroundColor: 'rgba(212, 237, 218, 0.5)',
+              border: '1px solid rgba(40, 167, 69, 0.4)',
+              borderRadius: '16px',
               marginBottom: '16px',
               fontSize: '14px',
               color: '#155724',
               textAlign: 'center',
-              backdropFilter: 'blur(5px)',
-              WebkitBackdropFilter: 'blur(5px)'
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
             }}>
               <strong>✅ Có {customer.videoCount} video đã sẵn sàng để tải</strong>
             </div>
@@ -210,11 +210,11 @@ function VideoDownload() {
               <div key={index} style={{
                 marginBottom: '16px',
                 padding: '16px',
-                backgroundColor: 'rgba(248, 249, 250, 0.7)',
-                borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.5)',
-                backdropFilter: 'blur(5px)',
-                WebkitBackdropFilter: 'blur(5px)'
+                backgroundColor: 'rgba(248, 249, 250, 0.35)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255,255,255,0.4)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)'
               }}>
                 <div style={{ 
                   marginBottom: '12px', 
