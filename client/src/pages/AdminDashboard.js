@@ -50,11 +50,20 @@ function AdminDashboard() {
   const [logs, setLogs] = useState([]);
   const [autoScanEnabled, setAutoScanEnabled] = useState(true);
   
-  // Add log function
+  // Add log function - logs mới nhất ở cuối để auto-scroll đúng
   const addLog = (message, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString('vi-VN');
-    setLogs(prev => [{ message, type, timestamp }, ...prev].slice(0, 50)); // Keep last 50 logs
+    setLogs(prev => [...prev, { message, type, timestamp }].slice(-50)); // Keep last 50 logs
   };
+
+  // Auto-scroll logs to bottom when new log added
+  const logsEndRef = useRef(null);
+  const logsContainerRef = useRef(null);
+  useEffect(() => {
+    if (logsContainerRef.current && logs.length > 0) {
+      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -869,14 +878,17 @@ function AdminDashboard() {
             Xóa logs
           </button>
         </div>
-        <div style={{ 
-          maxHeight: '200px', 
-          overflowY: 'auto', 
-          padding: '10px',
-          background: '#fafafa',
-          fontSize: '13px',
-          fontFamily: 'monospace'
-        }}>
+        <div 
+          ref={logsContainerRef}
+          style={{ 
+            maxHeight: '200px', 
+            overflowY: 'auto', 
+            padding: '10px',
+            background: '#fafafa',
+            fontSize: '13px',
+            fontFamily: 'monospace'
+          }}
+        >
           {logs.length === 0 ? (
             <div style={{ color: '#999', textAlign: 'center', padding: '20px' }}>
               Chưa có log nào...
@@ -899,6 +911,7 @@ function AdminDashboard() {
               </div>
             ))
           )}
+          <div ref={logsEndRef} />
         </div>
       </div>
 
