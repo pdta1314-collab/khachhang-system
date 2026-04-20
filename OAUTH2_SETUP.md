@@ -31,12 +31,36 @@ Vì tổ chức của bạn đã chặn tạo Service Account key (`iam.disableS
 7. Click **Create**
 8. **Download JSON** (tên file dạng `client_secret_xxx.json`)
 
-## Bước 2: Kích hoạt Google Drive API
+## Bước 2: Cấu hình OAuth Consent Screen (Fix lỗi org_internal)
+
+**Lỗi `org_internal` xảy ra khi ứng dụng bị giới hạn nội bộ tổ chức:**
+
+1. Trong Google Cloud Console, vào **APIs & Services** → **OAuth consent screen**
+2. Chọn **User Type**: **External** ⭐ (quan trọng: chọn External, không phải Internal)
+3. Click **Create**
+4. Điền thông tin:
+   - **App name**: `Drive Manager`
+   - **User support email**: Email của bạn
+   - **Developer contact information**: Email của bạn
+5. Click **Save and Continue**
+6. Ở màn hình **Scopes**:
+   - Click **Add or Remove Scopes**
+   - Tìm và chọn: `https://www.googleapis.com/auth/drive`
+   - Click **Update** → **Save and Continue**
+7. Ở màn hình **Test users**:
+   - Click **Add Users**
+   - Thêm email Google của bạn
+   - Click **Save and Continue**
+8. Click **Back to Dashboard**
+
+> ⚠️ Nếu tổ chức bắt buộc **Internal only**, bạn phải dùng **tài khoản Google cá nhân** (gmail.com) thay vì tài khoản tổ chức để tạo project này.
+
+## Bước 3: Kích hoạt Google Drive API
 
 1. Vào **APIs & Services** → **Library**
 2. Tìm **Google Drive API** → Click **Enable**
 
-## Bước 3: Lấy Refresh Token (Chỉ cần làm 1 lần)
+## Bước 4: Lấy Refresh Token (Chỉ cần làm 1 lần)
 
 ### Cách 1: Dùng tool online (Dễ nhất)
 
@@ -104,7 +128,7 @@ GOOGLE_DRIVE_PROJECT_FOLDER_ID=your_project_folder_id
 - Nếu mất, bạn phải thu hồi quyền và lấy lại:
   1. Vào [Google Account Permissions](https://myaccount.google.com/permissions)
   2. Tìm và xóa quyền của ứng dụng
-  3. Lặp lại Bước 3
+  3. Lặp lại Bước 4
 
 - Refresh Token sẽ bị vô hiệu hóa nếu:
   - Người dùng đổi mật khẩu
