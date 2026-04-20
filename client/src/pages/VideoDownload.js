@@ -10,6 +10,7 @@ function VideoDownload() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadedVideos, setDownloadedVideos] = useState(new Set());
 
   useEffect(() => {
     fetchCustomer();
@@ -39,7 +40,7 @@ function VideoDownload() {
     }
   };
 
-  const handleDownload = async (videoUrl, index) => {
+  const handleDownload = (videoUrl, index) => {
     console.log('handleDownload called for video', index, videoUrl);
 
     if (!videoUrl) {
@@ -49,40 +50,21 @@ function VideoDownload() {
 
     setIsDownloading(true);
 
-    try {
-      // Fetch video as blob to force download
-      const response = await fetch(videoUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+    // Đánh dấu video đã tải
+    setDownloadedVideos(prev => new Set([...prev, index]));
 
-      // Tạo link ẩn để tải video
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
-      document.body.appendChild(link);
-      link.click();
+    // Tạo link ẩn để tải video
+    const link = document.createElement('a');
+    link.href = videoUrl;
+    link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-      // Cleanup
-      setTimeout(() => {
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        setIsDownloading(false);
-      }, 1000);
-    } catch (error) {
-      console.error('Download error:', error);
-      // Fallback: try direct link if fetch fails
-      const link = document.createElement('a');
-      link.href = videoUrl;
-      link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setTimeout(() => {
-        setIsDownloading(false);
-      }, 1000);
-    }
+    setTimeout(() => {
+      setIsDownloading(false);
+    }, 1000);
   };
 
   const handleShare = async () => {
@@ -230,13 +212,13 @@ function VideoDownload() {
                 </div>
                 
                 {/* Nút Tải về cho từng video */}
-                <button 
+                <button
                   onClick={() => handleDownload(videoUrl, index)}
                   disabled={isDownloading}
                   style={{
                     width: '100%',
                     padding: '12px',
-                    backgroundColor: isDownloading ? '#999' : '#2563eb',
+                    backgroundColor: downloadedVideos.has(index) ? '#10b981' : isDownloading ? '#999' : '#2563eb',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
@@ -245,7 +227,7 @@ function VideoDownload() {
                     cursor: isDownloading ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {isDownloading ? '⏳ Đang tải...' : `📥 Tải video ${index + 1}`}
+                  {downloadedVideos.has(index) ? `✅ Đã tải video ${index + 1}` : isDownloading ? '⏳ Đang tải...' : `📥 Tải video ${index + 1}`}
                 </button>
               </div>
             ))}
