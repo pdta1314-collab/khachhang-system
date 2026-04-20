@@ -54,9 +54,17 @@ function VideoDownload() {
     
     try {
       console.log('Downloading video from:', customer.videoUrl);
-      // Mở video trong tab mới - cách đơn giản và hoạt động tốt nhất
-      window.open(customer.videoUrl, '_blank');
-      alert('Video đã mở trong tab mới. Bạn có thể tải xuống từ trình duyệt.');
+      
+      // Kiểm tra nếu là link Google Drive
+      if (customer.videoUrl.includes('drive.google.com')) {
+        // Mở link download trực tiếp của Google Drive
+        window.open(customer.videoUrl, '_blank');
+        alert('Video đang tải. Nếu không tự động tải, vui lòng chọn \"Download\" trong trang Google Drive.');
+      } else {
+        // Link thường - mở trực tiếp
+        window.open(customer.videoUrl, '_blank');
+        alert('Video đã mở trong tab mới. Bạn có thể tải xuống từ trình duyệt.');
+      }
     } catch (err) {
       console.error('Download error:', err);
       alert('Lỗi khi tải video: ' + err.message);
