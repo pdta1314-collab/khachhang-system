@@ -85,7 +85,33 @@ Vì tổ chức của bạn đã chặn tạo Service Account key (`iam.disableS
 
 7. Copy giá trị **Refresh token** (dài, bắt đầu bằng `1//`)
 
-### Cách 2: Dùng script có sẵn (Dễ nhất)
+### Cách 2: Dùng script có sẵn (Dễ nhất) ⭐
+
+1. Đảm bảo bạn đã có `client_id` và `client_secret` từ Bước 1
+
+2. Đặt chúng vào biến môi trường hoặc sửa file `server/get-refresh-token.js`:
+   ```bash
+   # Thay YOUR_CLIENT_ID và YOUR_CLIENT_SECRET bằng giá trị của bạn
+   export GOOGLE_CLIENT_ID=your_client_id
+   export GOOGLE_CLIENT_SECRET=your_client_secret
+   ```
+
+3. Chạy script:
+   ```bash
+   cd server
+   node get-refresh-token.js
+   ```
+
+4. Script sẽ:
+   - Bắt đầu server local tại http://localhost:3000
+   - Hiển thị URL để authorize
+   - Mở URL trong trình duyệt
+   - Đăng nhập và cho phép truy cập Google Drive
+   - Tự động lấy refresh token và hiển thị trên trình duyệt
+
+5. Copy refresh token hiển thị trên trình duyệt và thêm vào biến môi trường `GOOGLE_REFRESH_TOKEN`
+
+> 💡 **Lưu ý:** Đảm bảo port 3000 không bị chiếm bởi ứng dụng khác. Nếu bị chiếm, sửa port trong script.
 
 Tôi đã tạo sẵn file `get-refresh-token.js` trong project:
 
