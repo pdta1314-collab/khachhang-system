@@ -94,11 +94,28 @@ cd e:\KhachHang
 node get-refresh-token.js
 ```
 
-Script sẽ hỏi CLIENT_ID và CLIENT_SECRET, sau đó tự động:
-1. Mở trình duyệt để đăng nhập
-2. Lấy authorization code
-3. Trả về Refresh Token
-4. Lưu vào file `.env.oauth2`
+**Các bước thực hiện:**
+
+1. Script sẽ hỏi **CLIENT_ID** và **CLIENT_SECRET** (lấy từ file `client_secret_xxx.json`)
+
+2. Script hiển thị **URL** để đăng nhập Google. Copy URL và mở trong trình duyệt:
+   ```
+   https://accounts.google.com/o/oauth2/v2/auth?...
+   ```
+
+3. Đăng nhập bằng tài khoản Google của bạn
+
+4. **Lấy Authorization Code** ⭐:
+   - Sau khi đăng nhập, trình duyệt sẽ redirect đến:
+     ```
+     http://localhost:3000/oauth2callback?code=4/0A...XXX
+     ```
+   - Copy đoạn code sau `code=` (VD: `4/0Ade...xyz`)
+   - **Code chỉ dùng được 1 lần**, nếu lỗi phải lấy code mới
+
+5. Dán code vào terminal, nhấn Enter
+
+6. Script sẽ trả về **Refresh Token** và lưu vào file `.env.oauth2`
 
 ## Bước 4: Cấu hình Biến Môi Trường
 
