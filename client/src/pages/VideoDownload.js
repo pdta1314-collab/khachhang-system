@@ -63,39 +63,6 @@ function VideoDownload() {
     }, 1000);
   };
 
-  // Tải tất cả video cùng lúc
-  const handleDownloadAll = () => {
-    console.log('handleDownloadAll called');
-    console.log('Total videos:', customer?.videoUrls?.length);
-    
-    if (!customer?.videoUrls || customer.videoUrls.length === 0) {
-      alert('Không có video nào để tải.');
-      return;
-    }
-    
-    setIsDownloading(true);
-    
-    // Tải từng video với delay để tránh chặn trình duyệt
-    customer.videoUrls.forEach((videoUrl, index) => {
-      setTimeout(() => {
-        console.log('Auto downloading video', index + 1);
-        const link = document.createElement('a');
-        link.href = videoUrl;
-        link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, index * 1500); // Delay 1.5 giây giữa các video
-    });
-    
-    alert(`Đang tải ${customer.videoUrls.length} video. Vui lòng kiểm tra thông báo tải xuống của trình duyệt.`);
-    
-    setTimeout(() => {
-      setIsDownloading(false);
-    }, customer.videoUrls.length * 1500 + 1000);
-  };
-
   const handleShare = async () => {
     console.log('handleShare called');
     console.log('customer:', customer);
@@ -222,29 +189,6 @@ function VideoDownload() {
             }}>
               <strong>✅ Có {customer.videoCount} video đã sẵn sàng để tải</strong>
             </div>
-
-            {/* Nút Tải tất cả (nếu có nhiều video) */}
-            {customer.videoCount > 1 && (
-              <button 
-                onClick={handleDownloadAll}
-                disabled={isDownloading}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  backgroundColor: isDownloading ? '#999' : '#dc2626',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  cursor: isDownloading ? 'not-allowed' : 'pointer',
-                  marginBottom: '20px',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                }}
-              >
-                {isDownloading ? '⏳ Đang tải...' : `📥📥📥 TẢI TẤT CẢ ${customer.videoCount} VIDEO 📥📥📥`}
-              </button>
-            )}
 
             {/* Danh sách các video */}
             {customer.videoUrls?.map((videoUrl, index) => (
