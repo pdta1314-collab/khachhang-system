@@ -3,6 +3,42 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 
+// ==================== OAUTH2 + REFRESH TOKEN AUTH ====================
+let oauth2DriveClient = null;
+
+// Khởi tạo Google Drive client với OAuth2 + Refresh Token
+const getOAuth2DriveClient = () => {
+  if (oauth2DriveClient) return oauth2DriveClient;
+  
+  try {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+    
+    if (!clientId || !clientSecret || !refreshToken) {
+      console.log('⚠️ OAuth2 chưa được cấu hình (thiếu CLIENT_ID, CLIENT_SECRET hoặc REFRESH_TOKEN)');
+      return null;
+    }
+    
+    const oauth2Client = new google.auth.OAuth2(
+      clientId,
+      clientSecret,
+      'http://localhost:3000/oauth2callback' // Redirect URI không quan trọng với refresh token
+    );
+    
+    oauth2Client.setCredentials({
+      refresh_token: refreshToken
+    });
+    
+    oauth2DriveClient = google.drive({ version: 'v3', auth: oauth2Client });
+    console.log('✅ OAuth2 Drive client khởi tạo thành công');
+    return oauth2DriveClient;
+  } catch (error) {
+    console.error('❌ Lỗi khởi tạo OAuth2:', error.message);
+    return null;
+  }
+};
+
 // ==================== SERVICE ACCOUNT AUTH ====================
 let driveClient = null;
 
@@ -31,7 +67,7 @@ const getDriveClient = () => {
         scopes: ['https://www.googleapis.com/auth/drive']
       });
     } else {
-      console.log('⚠️ Service Account chưa được cấu hình. Một số chức năng sẽ bị hạn chế.');
+      // Không có Service Account, thử dùng OAuth2
       return null;
     }
     
@@ -41,6 +77,20 @@ const getDriveClient = () => {
     console.error('❌ Lỗi khởi tạo Service Account:', error.message);
     return null;
   }
+};
+
+// Lấy Drive Client (ưu tiên Service Account, nếu không thì OAuth2)
+const getAuthenticatedDriveClient = () => {
+  // Thử Service Account trước
+  const serviceAccount = getDriveClient();
+  if (serviceAccount) return serviceAccount;
+  
+  // Nếu không có, thử OAuth2
+  const oauth2 = getOAuth2DriveClient();
+  if (oauth2) return oauth2;
+  
+  console.log('⚠️ Không có authentication nào được cấu hình. Một số chức năng sẽ bị hạn chế.');
+  return null;
 };
 
 // ==================== API KEY AUTH (Read-only) ====================
@@ -157,17 +207,17 @@ const downloadFile = async (fileId, destinationPath) => {
 
 // ==================== WRITE OPERATIONS (Service Account) ====================
 
-// Tạo folder mới trong Project folder (dùng Service Account)
+// Tạo folder mới trong Project folder (dùng Service Account hoặc OAuth2)
 const createProjectFolder = async (folderName) => {
-  const drive = getDriveClient();
+  const drive = getAuthenticatedDriveClient();
   const projectFolderId = getProjectFolderId();
   
   if (!drive) {
-    console.log('⚠️ Service Account chưa cấu hình. Trả về mock data.');
+    console.log('⚠️ Authentication chưa cấu hình. Trả về mock data.');
     return {
       id: `temp_${Date.now()}`,
       name: folderName,
-      note: 'Service Account chưa cấu hình - Folder cần tạo thủ công'
+      note: 'Authentication chưa cấu hình - Folder cần tạo thủ công'
     };
   }
   
@@ -198,12 +248,12 @@ const createProjectFolder = async (folderName) => {
   }
 };
 
-// Tạo folder con trong một folder (dùng Service Account)
+// Tạo folder con trong một folder (dùng Service Account hoặc OAuth2)
 const createFolderInParent = async (folderName, parentFolderId) => {
-  const drive = getDriveClient();
+  const drive = getAuthenticatedDriveClient();
   
   if (!drive) {
-    console.log('⚠️ Service Account chưa cấu hình. Trả về mock data.');
+    console.log('⚠️ Authentication chưa cấu hình. Trả về mock data.');
     return {
       id: `temp_${Date.now()}_${folderName}`,
       name: folderName
@@ -231,12 +281,12 @@ const createFolderInParent = async (folderName, parentFolderId) => {
   }
 };
 
-// Tạo file CSV rỗng (dùng Service Account)
+// Tạo file CSV rỗng (dùng Service Account hoặc OAuth2)
 const createEmptyCSVFile = async (fileName, parentFolderId) => {
-  const drive = getDriveClient();
+  const drive = getAuthenticatedDriveClient();
   
   if (!drive) {
-    console.log('⚠️ Service Account chưa cấu hình. Trả về mock data.');
+    console.log('⚠️ Authentication chưa cấu hình. Trả về mock data.');
     return {
       id: `temp_${Date.now()}_csv`,
       name: fileName
@@ -270,13 +320,13 @@ const createEmptyCSVFile = async (fileName, parentFolderId) => {
   }
 };
 
-// Cập nhật file CSV (dùng Service Account)
+// Cập nhật file CSV (dùng Service Account hoặc OAuth2)
 const updateCSVFile = async (folderId, fileName, content) => {
-  const drive = getDriveClient();
+  const drive = getAuthenticatedDriveClient();
   
   if (!drive) {
-    console.log('⚠️ Service Account chưa cấu hình. Bỏ qua cập nhật CSV.');
-    return { success: false, note: 'Service Account chưa cấu hình' };
+    console.log('⚠️ Authentication chưa cấu hình. Bỏ qua cập nhật CSV.');
+    return { success: false, note: 'Authentication chưa cấu hình' };
   }
 
   try {
@@ -333,4 +383,6 @@ module.exports = {
   getVideosFromProjectFolder,
   getProjectFolderId,
   getDriveClient,
+  getOAuth2DriveClient,
+  getAuthenticatedDriveClient,
 };
