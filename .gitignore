@@ -10,6 +10,10 @@ database.db
 .env.local
 .env.*.local
 
+# Service Account Key (Google Drive)
+server/service-account-key.json
+service-account-key.json
+
 # Uploads (sẽ được lưu trên Railway volume)
 server/uploads/
 
