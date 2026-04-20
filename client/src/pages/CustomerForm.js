@@ -63,7 +63,7 @@ function CustomerForm() {
 
 
   return (
-    <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '20px' }}>
+    <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', padding: '20px' }}>
       {/* Logo làm tiêu đề trang - nằm ngoài card */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img
