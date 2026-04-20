@@ -805,7 +805,17 @@ function AdminDashboard() {
                     }}
                   />
                 </td>
-                <td style={{ fontWeight: 'bold', fontSize: '16px' }}>{customer.id}</td>
+                <td
+                  style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                  onClick={() => {
+                    const shortId = customer.id.toString().slice(-3);
+                    navigator.clipboard.writeText(shortId);
+                    addLog(`📋 Đã copy short ID: ${shortId}`, 'success');
+                  }}
+                  title="Click để copy short ID (3 số cuối)"
+                >
+                  {customer.id}
+                </td>
                 <td>{customer.name}</td>
                 <td>{customer.phone || '-'}</td>
                 <td>
@@ -820,7 +830,17 @@ function AdminDashboard() {
                     {customer.status}
                   </span>
                 </td>
-                <td>{customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}</td>
+                <td
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    const shortTime = customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-';
+                    navigator.clipboard.writeText(shortTime);
+                    addLog(`📋 Đã copy giờ: ${shortTime}`, 'success');
+                  }}
+                  title="Click để copy giờ đăng ký"
+                >
+                  {customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                </td>
                 <td>
                   <span className={`status-badge ${customer.videoCount > 0 ? 'status-success' : 'status-pending'}`}>
                     {customer.videoCount || 0} video
