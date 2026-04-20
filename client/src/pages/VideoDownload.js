@@ -49,9 +49,14 @@ function VideoDownload() {
     
     setIsDownloading(true);
     
-    // Cách 1: Mở link thẳng trong tab mới (tốt cho mobile)
-    // Người dùng có thể xem video và bấm nút download của trình duyệt
-    window.open(videoUrl, '_blank');
+    // Tạo link ẩn để tải video
+    const link = document.createElement('a');
+    link.href = videoUrl;
+    link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     
     setTimeout(() => {
       setIsDownloading(false);
@@ -70,20 +75,25 @@ function VideoDownload() {
     
     setIsDownloading(true);
     
-    // Mở từng video trong tab mới với delay
-    // Người dùng có thể xem và tải từng video
+    // Tải từng video với delay để tránh chặn trình duyệt
     customer.videoUrls.forEach((videoUrl, index) => {
       setTimeout(() => {
-        console.log('Opening video', index + 1);
-        window.open(videoUrl, '_blank');
-      }, index * 800); // Delay 0.8 giây giữa các video
+        console.log('Auto downloading video', index + 1);
+        const link = document.createElement('a');
+        link.href = videoUrl;
+        link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, index * 1500); // Delay 1.5 giây giữa các video
     });
     
-    alert(`Đang mở ${customer.videoUrls.length} video trong tab mới. Vui lòng tải từng video trên trình duyệt.`);
+    alert(`Đang tải ${customer.videoUrls.length} video. Vui lòng kiểm tra thông báo tải xuống của trình duyệt.`);
     
     setTimeout(() => {
       setIsDownloading(false);
-    }, customer.videoUrls.length * 800 + 1000);
+    }, customer.videoUrls.length * 1500 + 1000);
   };
 
   const handleShare = async () => {
@@ -210,8 +220,7 @@ function VideoDownload() {
               color: '#155724',
               textAlign: 'center'
             }}>
-              <strong>✅ Có {customer.videoCount} video đã sẵn sàng</strong><br/>
-              <small>Bấm nút bên dưới để mở video, sau đó dùng nút tải của trình duyệt</small>
+              <strong>✅ Có {customer.videoCount} video đã sẵn sàng để tải</strong>
             </div>
 
             {/* Nút Tải tất cả (nếu có nhiều video) */}
@@ -233,7 +242,7 @@ function VideoDownload() {
                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                 }}
               >
-                {isDownloading ? '⏳ Đang mở...' : `📥📥📥 MỞ TẤT CẢ ${customer.videoCount} VIDEO 📥📥📥`}
+                {isDownloading ? '⏳ Đang tải...' : `📥📥📥 TẢI TẤT CẢ ${customer.videoCount} VIDEO 📥📥📥`}
               </button>
             )}
 
@@ -270,7 +279,7 @@ function VideoDownload() {
                     cursor: isDownloading ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {isDownloading ? '⏳ Đang mở...' : `📥 Xem & Tải video ${index + 1}`}
+                  {isDownloading ? '⏳ Đang tải...' : `📥 Tải video ${index + 1}`}
                 </button>
               </div>
             ))}
