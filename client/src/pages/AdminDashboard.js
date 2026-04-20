@@ -752,40 +752,6 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* Status Statistics */}
-      <div className="card" style={{ marginBottom: '20px', padding: '15px' }}>
-        <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: 'bold' }}>📊 Thống kê theo trạng thái</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
-          <div style={{ padding: '10px', background: '#ef5350', borderRadius: '8px', color: 'white' }}>
-            <div style={{ fontSize: '14px', marginBottom: '5px' }}>🔴 Đang chụp</div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-              {customers.filter(c => c.status === 'Đang chụp').length} khách
-            </div>
-            <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.9 }}>
-              ID: {customers.filter(c => c.status === 'Đang chụp').map(c => c.id).join(', ') || '-'}
-            </div>
-          </div>
-          <div style={{ padding: '10px', background: '#42a5f5', borderRadius: '8px', color: 'white' }}>
-            <div style={{ fontSize: '14px', marginBottom: '5px' }}>🔵 Đang chờ</div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-              {customers.filter(c => c.status === 'Đang chờ').length} khách
-            </div>
-            <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.9 }}>
-              ID: {customers.filter(c => c.status === 'Đang chờ').map(c => c.id).join(', ') || '-'}
-            </div>
-          </div>
-          <div style={{ padding: '10px', background: '#9e9e9e', borderRadius: '8px', color: 'white' }}>
-            <div style={{ fontSize: '14px', marginBottom: '5px' }}>⚪ Đã chụp xong</div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-              {customers.filter(c => c.status === 'Đã chụp xong').length} khách
-            </div>
-            <div style={{ fontSize: '12px', marginTop: '5px', opacity: 0.9 }}>
-              ID: {customers.filter(c => c.status === 'Đã chụp xong').map(c => c.id).join(', ') || '-'}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Delete selected button */}
       {selectedIds.length > 0 && (
         <div style={{ marginBottom: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -839,11 +805,12 @@ function AdminDashboard() {
                   />
                 </td>
                 <td
-                  style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer' }}
+                  style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', backgroundColor: '#e3f2fd' }}
                   onClick={() => {
                     const shortId = customer.id.toString().slice(-3);
                     navigator.clipboard.writeText(shortId);
                     addLog(`📋 Đã copy short ID: ${shortId}`, 'success');
+                    alert(`Đã copy short ID: ${shortId}`);
                   }}
                   title="Click để copy short ID (3 số cuối)"
                 >
@@ -864,11 +831,12 @@ function AdminDashboard() {
                   </span>
                 </td>
                 <td
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', backgroundColor: '#e8f5e9' }}
                   onClick={() => {
                     const shortTime = customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-';
                     navigator.clipboard.writeText(shortTime);
                     addLog(`📋 Đã copy giờ: ${shortTime}`, 'success');
+                    alert(`Đã copy giờ đăng ký: ${shortTime}`);
                   }}
                   title="Click để copy giờ đăng ký"
                 >

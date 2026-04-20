@@ -14,6 +14,11 @@ function VideoDownload() {
 
   useEffect(() => {
     fetchCustomer();
+    // Load downloaded videos from localStorage
+    const savedDownloads = localStorage.getItem(`downloaded_videos_${uniqueId}`);
+    if (savedDownloads) {
+      setDownloadedVideos(new Set(JSON.parse(savedDownloads)));
+    }
   }, [uniqueId]);
 
   const fetchCustomer = async () => {
@@ -50,8 +55,10 @@ function VideoDownload() {
 
     setIsDownloading(true);
 
-    // Đánh dấu video đã tải
-    setDownloadedVideos(prev => new Set([...prev, index]));
+    // Đánh dấu video đã tải và lưu vào localStorage
+    const newDownloaded = new Set([...downloadedVideos, index]);
+    setDownloadedVideos(newDownloaded);
+    localStorage.setItem(`downloaded_videos_${uniqueId}`, JSON.stringify([...newDownloaded]));
 
     // Tạo link ẩn để tải video
     const link = document.createElement('a');
