@@ -59,6 +59,7 @@ CREATE TABLE customers (
   phone TEXT,
   email TEXT,
   outfit TEXT,
+  notes TEXT,
   unique_id TEXT UNIQUE NOT NULL,
   video_path TEXT,
   status TEXT DEFAULT 'Đang chờ',

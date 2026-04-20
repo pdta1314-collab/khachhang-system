@@ -2,12 +2,12 @@ const pool = require('../config/database');
 const { randomUUID } = require('crypto');
 
 class Customer {
-  static async create(name, phone, email) {
+  static async create(name, phone, email, outfit = null) {
     const uniqueId = randomUUID();
-    const sql = 'INSERT INTO customers (name, phone, email, unique_id) VALUES ($1, $2, $3, $4) RETURNING id, unique_id';
-    
+    const sql = 'INSERT INTO customers (name, phone, email, outfit, unique_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, unique_id';
+
     try {
-      const result = await pool.query(sql, [name, phone, email, uniqueId]);
+      const result = await pool.query(sql, [name, phone, email, outfit, uniqueId]);
       return { id: result.rows[0].id, uniqueId: result.rows[0].unique_id };
     } catch (err) {
       throw err;
@@ -16,7 +16,7 @@ class Customer {
 
   static async getById(id) {
     const sql = 'SELECT * FROM customers WHERE id = $1';
-    
+
     try {
       const result = await pool.query(sql, [id]);
       const row = result.rows[0];
@@ -27,6 +27,8 @@ class Customer {
           name: row.name,
           phone: row.phone,
           email: row.email,
+          outfit: row.outfit,
+          notes: row.notes,
           status: row.status,
           registration_time: row.registration_time,
           created_at: row.created_at,
@@ -41,7 +43,7 @@ class Customer {
 
   static async getByUniqueId(uniqueId) {
     const sql = 'SELECT * FROM customers WHERE unique_id = $1';
-    
+
     try {
       const result = await pool.query(sql, [uniqueId]);
       const row = result.rows[0];
@@ -52,6 +54,8 @@ class Customer {
           name: row.name,
           phone: row.phone,
           email: row.email,
+          outfit: row.outfit,
+          notes: row.notes,
           status: row.status,
           registration_time: row.registration_time,
           created_at: row.created_at,
@@ -66,13 +70,13 @@ class Customer {
 
   static async getAll() {
     const sql = `
-      SELECT c.*, COUNT(ci.id) as image_count 
-      FROM customers c 
-      LEFT JOIN customer_images ci ON c.id = ci.customer_id 
-      GROUP BY c.id 
+      SELECT c.*, COUNT(ci.id) as image_count
+      FROM customers c
+      LEFT JOIN customer_images ci ON c.id = ci.customer_id
+      GROUP BY c.id
       ORDER BY c.registration_time DESC
     `;
-    
+
     try {
       const result = await pool.query(sql);
       return result.rows.map(row => ({
@@ -81,6 +85,8 @@ class Customer {
         name: row.name,
         phone: row.phone,
         email: row.email,
+        outfit: row.outfit,
+        notes: row.notes,
         status: row.status,
         registration_time: row.registration_time,
         created_at: row.created_at,
@@ -94,9 +100,54 @@ class Customer {
 
   static async updateStatus(id, status) {
     const sql = 'UPDATE customers SET status = $1 WHERE id = $2';
-    
+
     try {
       await pool.query(sql, [status, id]);
+      return { changes: 1 };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  static async update(id, updates) {
+    const fields = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (updates.name !== undefined) {
+      fields.push(`name = $${paramIndex++}`);
+      values.push(updates.name);
+    }
+    if (updates.phone !== undefined) {
+      fields.push(`phone = $${paramIndex++}`);
+      values.push(updates.phone);
+    }
+    if (updates.email !== undefined) {
+      fields.push(`email = $${paramIndex++}`);
+      values.push(updates.email);
+    }
+    if (updates.outfit !== undefined) {
+      fields.push(`outfit = $${paramIndex++}`);
+      values.push(updates.outfit);
+    }
+    if (updates.notes !== undefined) {
+      fields.push(`notes = $${paramIndex++}`);
+      values.push(updates.notes);
+    }
+    if (updates.status !== undefined) {
+      fields.push(`status = $${paramIndex++}`);
+      values.push(updates.status);
+    }
+
+    if (fields.length === 0) {
+      return { changes: 0 };
+    }
+
+    values.push(id);
+    const sql = `UPDATE customers SET ${fields.join(', ')} WHERE id = $${paramIndex}`;
+
+    try {
+      await pool.query(sql, values);
       return { changes: 1 };
     } catch (err) {
       throw err;
@@ -206,7 +257,7 @@ class Customer {
   // Lấy danh sách khách đang chờ (status = 'Đang chờ')
     static async getWaitingList() {
     const sql = 'SELECT * FROM customers WHERE status = $1 ORDER BY registration_time ASC';
-    
+
     try {
       const result = await pool.query(sql, ['Đang chờ']);
       return result.rows.map(row => ({
@@ -215,6 +266,8 @@ class Customer {
         name: row.name,
         phone: row.phone,
         email: row.email,
+        outfit: row.outfit,
+        notes: row.notes,
         status: row.status,
         registration_time: row.registration_time
       }));

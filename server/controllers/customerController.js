@@ -76,8 +76,8 @@ const upload = multer({
 // Tạo khách hàng mới
 exports.createCustomer = async (req, res) => {
   try {
-    const { name, phone, email } = req.body;
-    
+    const { name, phone, email, outfit } = req.body;
+
     if (!name || !phone) {
       return res.status(400).json({ error: 'Vui lòng nhập đầy đủ họ tên và số điện thoại' });
     }
@@ -93,7 +93,7 @@ exports.createCustomer = async (req, res) => {
       status = 'Đang chụp';
     }
 
-    const customer = await Customer.create(name, phone, email);
+    const customer = await Customer.create(name, phone, email, outfit);
     
     // Cập nhật status
     await Customer.updateStatus(customer.id, status);
@@ -320,7 +320,7 @@ exports.removeVideo = async (req, res) => {
 exports.deleteCustomer = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const customer = await Customer.getById(id);
     if (customer && customer.video_path && fs.existsSync(customer.video_path)) {
       fs.unlinkSync(customer.video_path);
@@ -345,6 +345,20 @@ exports.deleteCustomer = async (req, res) => {
   } catch (error) {
     console.error('Lỗi xóa khách hàng:', error);
     res.status(500).json({ error: 'Lỗi server khi xóa khách hàng' });
+  }
+};
+
+// Cập nhật thông tin khách hàng (outfit, notes, v.v.)
+exports.updateCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    await Customer.update(id, updates);
+    res.json({ success: true, message: 'Đã cập nhật thông tin khách hàng' });
+  } catch (error) {
+    console.error('Lỗi cập nhật khách hàng:', error);
+    res.status(500).json({ error: 'Lỗi server' });
   }
 };
 

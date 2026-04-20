@@ -10,6 +10,7 @@ function CustomerForm() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [outfit, setOutfit] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -31,7 +32,8 @@ function CustomerForm() {
       const response = await axios.post(`${API_URL}/customers`, {
         name: name.trim(),
         phone: phone.trim(),
-        email: email.trim()
+        email: email.trim(),
+        outfit: outfit.trim()
       });
 
       if (response.data.success) {
@@ -47,6 +49,7 @@ function CustomerForm() {
         setName('');
         setPhone('');
         setEmail('');
+        setOutfit('');
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại');
@@ -125,6 +128,17 @@ function CustomerForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Nhập email của bạn"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="outfit">Trang phục (không bắt buộc)</label>
+                <input
+                  type="text"
+                  id="outfit"
+                  value={outfit}
+                  onChange={(e) => setOutfit(e.target.value)}
+                  placeholder="Nhập trang phục của bạn"
                 />
               </div>
 

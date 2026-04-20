@@ -55,8 +55,6 @@ function AdminDashboard() {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [googleDriveFolders, setGoogleDriveFolders] = useState([]);
   const [loadingFolders, setLoadingFolders] = useState(false);
-  const [csvFileId, setCsvFileId] = useState(null);
-  const [uploadingCsv, setUploadingCsv] = useState(false);
   
   // Add log function - logs mới nhất ở cuối để auto-scroll đúng
   const addLog = (message, type = 'info') => {
@@ -100,22 +98,6 @@ function AdminDashboard() {
     setShowProjectModal(false);
     addLog(`📁 Đã chọn folder: ${folder.name}`, 'info');
 
-    // Create CSV file for the project
-    try {
-      addLog(`🔄 Đang tạo CSV file...`, 'info');
-      const csvResponse = await axios.post(`${API_URL}/google-drive/create-csv`,
-        { folderId: folder.id, fileName: `${folder.name}_customers.csv` },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (csvResponse.data.success) {
-        setCsvFileId(csvResponse.data.csv.id);
-        addLog(`✅ Đã tạo CSV file`, 'success');
-      }
-    } catch (err) {
-      addLog(`⚠️ Lỗi tạo CSV: ${err.message}`, 'warning');
-    }
-
     // Auto sync videos from selected folder
     try {
       addLog(`🔄 Đang sync video từ folder ${folder.name}...`, 'info');
@@ -130,95 +112,6 @@ function AdminDashboard() {
       }
     } catch (err) {
       addLog(`❌ Lỗi sync: ${err.message}`, 'error');
-    }
-  };
-
-  // Download CSV from Google Drive
-  const handleDownloadCsv = async () => {
-    if (!csvFileId) {
-      alert('Không có CSV file để download');
-      return;
-    }
-
-    const token = localStorage.getItem('adminToken');
-    try {
-      addLog(`🔄 Đang download CSV...`, 'info');
-      const response = await axios.get(`${API_URL}/google-drive/download-csv/${csvFileId}`,
-        { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' }
-      );
-
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'customers.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      addLog(`✅ Đã download CSV thành công`, 'success');
-    } catch (err) {
-      addLog(`❌ Lỗi download CSV: ${err.message}`, 'error');
-      alert('Lỗi khi download CSV: ' + err.message);
-    }
-  };
-
-  // Upload CSV and sync to database
-  const handleUploadCsv = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const token = localStorage.getItem('adminToken');
-    setUploadingCsv(true);
-
-    try {
-      addLog(`🔄 Đang upload CSV...`, 'info');
-
-      // Parse CSV
-      const text = await file.text();
-      const rows = text.split('\n').map(row => row.split(','));
-      const headers = rows[0];
-      const dataRows = rows.slice(1).filter(row => row.length > 1);
-
-      // Sync to database
-      let updated = 0;
-      let errors = [];
-
-      for (const row of dataRows) {
-        try {
-          const [id, name, outfit, phone, registeredDate, status, videoCount] = row.map(cell => cell?.trim?.() || cell);
-
-          if (!id) {
-            errors.push({ row, error: 'Thiếu ID khách hàng' });
-            continue;
-          }
-
-          const customerId = parseInt(id);
-
-          await axios.put(`${API_URL}/customers/${customerId}`,
-            { name, outfit, phone, status },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-
-          updated++;
-        } catch (err) {
-          errors.push({ row, error: err.message });
-        }
-      }
-
-      addLog(`✅ Đã sync ${updated} khách hàng từ CSV`, 'success');
-      fetchCustomers(token);
-      alert(`Đã sync ${updated} khách hàng thành công!`);
-
-      if (errors.length > 0) {
-        console.log('Errors:', errors);
-      }
-    } catch (err) {
-      addLog(`❌ Lỗi upload CSV: ${err.message}`, 'error');
-      alert('Lỗi khi upload CSV: ' + err.message);
-    } finally {
-      setUploadingCsv(false);
-      event.target.value = '';
     }
   };
 
@@ -645,13 +538,13 @@ function AdminDashboard() {
     }
   };
 
-  const exportToCSV = (data) => {
-    const headers = ['ID', 'Họ tên', 'Trang phục', 'Số điện thoại', 'Ngày đăng ký', 'Trạng thái', 'Số video'];
+  const exportToExcel = (data) => {
+    const headers = ['ID', 'Họ tên', 'Trang phục', 'Ghi chú', 'Ngày đăng ký', 'Trạng thái', 'Số video'];
     const rows = data.map(c => [
       c.id,
       c.name,
       c.outfit,
-      c.phone || '',
+      c.notes || '',
       new Date(c.created_at).toLocaleString('vi-VN'),
       c.status || 'Chờ chụp',
       c.videoCount || 0
@@ -666,9 +559,9 @@ function AdminDashboard() {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     const projectName = selectedProjectFolder ? selectedProjectFolder.name.replace(/\s+/g, '_') : 'khach-hang';
-    link.download = `${projectName}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
     link.click();
-    addLog(`📊 Đã export CSV với ${data.length} khách hàng`, 'success');
+    addLog(`📊 Đã export Excel với ${data.length} khách hàng`, 'success');
   };
 
   const handleUpload = async () => {
@@ -792,28 +685,11 @@ function AdminDashboard() {
             <button onClick={fetchGoogleDriveFolders} disabled={loadingFolders} className="btn btn-primary">
               {loadingFolders ? 'Đang tải...' : selectedProjectFolder ? `📁 ${selectedProjectFolder.name}` : '📁 DỰ ÁN'}
             </button>
-            {csvFileId && (
-              <>
-                <button onClick={handleDownloadCsv} className="btn btn-success">
-                  📥 Download CSV
-                </button>
-                <label className="btn btn-primary" style={{ cursor: uploadingCsv ? 'not-allowed' : 'pointer', opacity: uploadingCsv ? 0.5 : 1 }}>
-                  {uploadingCsv ? 'Đang upload...' : '📤 Upload CSV'}
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleUploadCsv}
-                    disabled={uploadingCsv}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-              </>
-            )}
             <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary">
               {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
             </button>
-            <button onClick={() => exportToCSV(filteredCustomers)} className="btn btn-success">
-              📊 Export CSV
+            <button onClick={() => exportToExcel(filteredCustomers)} className="btn btn-success">
+              📊 Export Excel
             </button>
           </div>
         </div>
@@ -903,12 +779,12 @@ function AdminDashboard() {
               </th>
               <th>ID</th>
               <th>Họ tên</th>
-              <th>Số điện thoại</th>
               <th>Trạng thái</th>
               <th>Giờ đăng ký</th>
               <th>Ảnh</th>
               <th>Video</th>
               <th>Thao tác</th>
+              <th>Ghi chú</th>
             </tr>
           </thead>
           <tbody>
@@ -929,7 +805,6 @@ function AdminDashboard() {
                 </td>
                 <td style={{ fontWeight: 'bold', fontSize: '16px' }}>{customer.id}</td>
                 <td>{customer.name}</td>
-                <td>{customer.phone}</td>
                 <td>
                   <span style={{
                     padding: '4px 8px',
@@ -955,25 +830,25 @@ function AdminDashboard() {
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button 
+                    <button
                       onClick={() => setViewCustomer(customer)}
                       className="btn btn-secondary"
                       style={{ padding: '8px 16px', fontSize: '14px' }}
                     >
                       Xem
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleOpenImageModal(customer)}
                       className="btn btn-secondary"
                       style={{ padding: '8px 16px', fontSize: '14px' }}
                     >
                       Ảnh
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleOpenVideoModal(customer)}
                       className="btn btn-secondary"
-                      style={{ 
-                        padding: '8px 16px', 
+                      style={{
+                        padding: '8px 16px',
                         fontSize: '14px',
                         backgroundColor: customer.videoCount > 0 ? '#e3f2fd' : undefined,
                         color: customer.videoCount > 0 ? '#1976d2' : undefined
@@ -982,6 +857,27 @@ function AdminDashboard() {
                       {customer.videoCount > 0 ? `Video (${customer.videoCount})` : 'Video'}
                     </button>
                   </div>
+                </td>
+                <td
+                  style={{ maxWidth: '200px', fontSize: '13px', color: '#666', cursor: 'pointer', padding: '8px' }}
+                  onClick={() => {
+                    const newNotes = prompt('Ghi chú:', customer.notes || '');
+                    if (newNotes !== null) {
+                      const token = localStorage.getItem('adminToken');
+                      axios.put(`${API_URL}/customers/${customer.id}`,
+                        { notes: newNotes },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      ).then(() => {
+                        fetchCustomers(token);
+                        addLog(`✅ Đã cập nhật ghi chú cho ${customer.name}`, 'success');
+                      }).catch(err => {
+                        addLog(`❌ Lỗi cập nhật ghi chú: ${err.message}`, 'error');
+                      });
+                    }
+                  }}
+                  title="Click để sửa ghi chú"
+                >
+                  {customer.notes || '-'}
                 </td>
               </tr>
             ))}
@@ -1366,7 +1262,8 @@ function AdminDashboard() {
               {/* Thông tin chi tiết */}
               <div style={{ textAlign: 'left', background: '#f5f5f5', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
                 <p style={{ marginBottom: '8px' }}><strong>Họ tên:</strong> {viewCustomer.name}</p>
-                <p style={{ marginBottom: '8px' }}><strong>Số điện thoại:</strong> {viewCustomer.phone || '-'}</p>
+                <p style={{ marginBottom: '8px' }}><strong>Trang phục:</strong> {viewCustomer.outfit || '-'}</p>
+                <p style={{ marginBottom: '8px' }}><strong>Ghi chú:</strong> {viewCustomer.notes || '-'}</p>
                 <p style={{ marginBottom: '8px' }}><strong>Email:</strong> {viewCustomer.email || '-'}</p>
                 <p style={{ marginBottom: '8px' }}>
                   <strong>Trạng thái:</strong>{' '}
