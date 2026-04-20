@@ -21,7 +21,11 @@ function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('');
   const [videoFilter, setVideoFilter] = useState(''); // 'has', 'no', ''
   const [imageFilter, setImageFilter] = useState(''); // 'has', 'no', ''
-  
+
+  // Sort states
+  const [sortField, setSortField] = useState('id');
+  const [sortDirection, setSortDirection] = useState('asc');
+
   // Auto-refresh
   const [lastUpdate, setLastUpdate] = useState(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -600,25 +604,52 @@ function AdminDashboard() {
     }
   };
 
+  // Sort function
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   const filteredCustomers = customers.filter(c => {
     // Search filter
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           c.phone?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     // Status filter
     const matchesStatus = !statusFilter || c.status === statusFilter;
-    
+
     // Video filter
-    const matchesVideo = !videoFilter || 
+    const matchesVideo = !videoFilter ||
                         (videoFilter === 'has' && c.video_path) ||
                         (videoFilter === 'no' && !c.video_path);
-    
+
     // Image filter
     const matchesImage = !imageFilter ||
                         (imageFilter === 'has' && c.image_count > 0) ||
                         (imageFilter === 'no' && (!c.image_count || c.image_count === 0));
-    
+
     return matchesSearch && matchesStatus && matchesVideo && matchesImage;
+  }).sort((a, b) => {
+    let aValue, bValue;
+
+    if (sortField === 'id') {
+      aValue = a.id;
+      bValue = b.id;
+    } else if (sortField === 'registration_time') {
+      aValue = new Date(a.registration_time || a.created_at);
+      bValue = new Date(b.registration_time || b.created_at);
+    } else {
+      aValue = a[sortField];
+      bValue = b[sortField];
+    }
+
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
   });
 
   // Pagination logic
@@ -628,10 +659,10 @@ function AdminDashboard() {
     currentPage * itemsPerPage
   );
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters or sort change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, videoFilter, imageFilter]);
+  }, [searchTerm, statusFilter, videoFilter, imageFilter, sortField, sortDirection]);
 
   if (loading) {
     return (
@@ -778,11 +809,23 @@ function AdminDashboard() {
                   onChange={handleSelectAll}
                 />
               </th>
-              <th>ID</th>
+              <th
+                onClick={() => handleSort('id')}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+                title="Click để sắp xếp"
+              >
+                ID {sortField === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
+              </th>
               <th>Họ & Tên</th>
               <th>SĐT</th>
               <th>Trạng thái</th>
-              <th>Giờ đăng ký</th>
+              <th
+                onClick={() => handleSort('registration_time')}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
+                title="Click để sắp xếp"
+              >
+                Giờ đăng ký {sortField === 'registration_time' && (sortDirection === 'asc' ? '↑' : '↓')}
+              </th>
               <th>Video</th>
               <th>Thao tác</th>
               <th>Ghi chú</th>
@@ -804,16 +847,7 @@ function AdminDashboard() {
                     }}
                   />
                 </td>
-                <td
-                  style={{ fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', backgroundColor: '#e3f2fd' }}
-                  onClick={() => {
-                    const shortId = customer.id.toString().slice(-3);
-                    navigator.clipboard.writeText(shortId);
-                    addLog(`📋 Đã copy short ID: ${shortId}`, 'success');
-                    alert(`Đã copy short ID: ${shortId}`);
-                  }}
-                  title="Click để copy short ID (3 số cuối)"
-                >
+                <td style={{ fontWeight: 'bold', fontSize: '16px' }}>
                   {customer.id}
                 </td>
                 <td>{customer.name}</td>
@@ -830,16 +864,7 @@ function AdminDashboard() {
                     {customer.status}
                   </span>
                 </td>
-                <td
-                  style={{ cursor: 'pointer', backgroundColor: '#e8f5e9' }}
-                  onClick={() => {
-                    const shortTime = customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-';
-                    navigator.clipboard.writeText(shortTime);
-                    addLog(`📋 Đã copy giờ: ${shortTime}`, 'success');
-                    alert(`Đã copy giờ đăng ký: ${shortTime}`);
-                  }}
-                  title="Click để copy giờ đăng ký"
-                >
+                <td>
                   {customer.registration_time ? new Date(customer.registration_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '-'}
                 </td>
                 <td>
