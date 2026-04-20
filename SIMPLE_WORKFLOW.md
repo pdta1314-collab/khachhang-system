@@ -2,16 +2,18 @@
 
 Vì OAuth2 và Service Account đều bị hạn chế bởi tổ chức, chúng ta dùng workflow thủ công đơn giản.
 
-## Tóm tắt
+## ✅ Đã Hoàn Thành
 
 - ✅ **Không cần** OAuth2 phức tạp
 - ✅ **Không cần** Service Account key
 - ✅ **Chỉ cần** tạo folder thủ công trên Google Drive
+- ✅ Admin Dashboard có nút **DỰ ÁN** để chọn folder
 - ✅ Hệ thống tự động đọc folder và sync video
+- ✅ Export CSV trực tiếp từ Admin Dashboard
 
-## Quy trình
+## Quy trình Sử Dụng
 
-### Bước 1: Bạn tạo folder thủ công trên Google Drive
+### Bước 1: Tạo folder thủ công trên Google Drive
 
 1. Mở Google Drive của bạn
 2. Tạo folder mới trong folder **"Project"**
@@ -19,68 +21,59 @@ Vì OAuth2 và Service Account đều bị hạn chế bởi tổ chức, chúng
    - VD: `20-04-2026_TrumSo`
 4. Trong folder đó, tạo:
    - Subfolder: **"videos"** (để chứa video)
-   - File Google Sheets: **"customers"** (để chứa danh sách khách hàng)
 
-### Bước 2: Copy Folder ID
+### Bước 2: Chọn dự án trong Admin Dashboard
 
-1. Mở folder vừa tạo trong Google Drive
-2. Nhìn URL, copy phần sau `folders/`:
-   ```
-   https://drive.google.com/drive/folders/1A2B3C4D5E...
-                                     ↑ Copy cái này
-   ```
+1. Đăng nhập vào Admin Dashboard
+2. Click nút **📁 DỰ ÁN**
+3. Modal hiển thị danh sách folder từ Google Drive
+4. Chọn folder dự án muốn làm việc
 
-### Bước 3: Thêm dự án vào hệ thống (API có sẵn)
-
-Gọi API để thêm dự án:
-
-```bash
-curl -X POST https://your-app.railway.app/api/projects/manual \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "TrumSo",
-    "folder_id": "1A2B3C4D5E...",
-    "date": "20-04-2026"
-  }'
-```
-
-Hoặc dùng Admin Dashboard UI (tôi sẽ thêm nút "Thêm dự án thủ công")
-
-### Bước 4: Upload video và sync
+### Bước 3: Upload video và sync
 
 1. Upload video vào folder `videos/` trên Google Drive
 2. Đặt tên theo định dạng: `ID{N}_T{N}.mp4`
    - VD: `ID1_T1.mp4`, `ID1_T2.mp4`, `ID2_T1.mp4`
-3. Trong Admin Dashboard, click **"Sync Video từ Drive"**
+3. Trong Admin Dashboard, click **☁️ Scan Google Drive**
 4. Hệ thống tự động:
-   - Đọc tất cả video từ folder
+   - Đọc tất cả video từ folder đã chọn
    - Parse tên file → Liên kết với customer ID
    - Cập nhật database
 
+### Bước 4: Export CSV
+
+1. Trong Admin Dashboard, click nút **📊 Export CSV**
+2. File CSV được tải về máy với tên: `{TênDựÁN}_{Ngày}.csv`
+3. Upload file CSV vào folder dự án trên Google Drive (thủ công)
+
 ## So sánh
 
-| | OAuth2 | Service Account | **Manual (Khuyến nghị)** |
+| | OAuth2 | Service Account | **Manual (Đã implement)** |
 |---|---|---|---|
 | **Độ phức tạp** | Cao | Cao | **Thấp** |
 | **Cần IT admin** | Có | Có | **Không** |
 | **Tự động tạo folder** | ✅ | ✅ | ❌ (Tự tạo tay) |
 | **Sync video** | ✅ | ✅ | ✅ (Auto scan) |
-| **Export CSV** | ✅ | ✅ | ✅ (Download từ Sheets) |
+| **Export CSV** | ✅ | ✅ | ✅ (Download từ Admin) |
 
-## Bạn muốn tôi làm gì?
+## Các thay đổi đã thực hiện
 
-### Option 1: Thêm "Thêm dự án thủ công" vào Admin Dashboard
-- Input: Tên dự án, Folder ID, Ngày
-- Lưu vào database
-- Sync video tự động từ folder đó
+### Frontend
+- ✅ Xóa nút DỰ ÁN khỏi trang đăng ký (CustomerForm.js)
+- ✅ Thêm nút DỰ ÁN vào Admin Dashboard
+- ✅ Thêm modal chọn folder từ Google Drive
+- ✅ Thêm nút Export CSV
 
-### Option 2: CSV Export đơn giản
-- Trong Admin Dashboard: Chọn dự án → Export CSV
-- Download file CSV về máy
-- Upload lên Google Drive thủ công
+### Backend
+- ✅ Tạo route `/api/google-drive/folders` để lấy danh sách folder
+- ✅ Tạo route `/api/google-drive/sync-folder` để sync video từ folder
+- ✅ Đăng ký routes trong server.js
 
-**Khuyến nghị: Option 1** - Đơn giản, không cần OAuth2 phức tạp.
+## Deploy
 
----
+Code đã được push lên GitHub (commit `34e51a0`).
 
-**Bạn chọn option nào? Tôi sẽ implement ngay.**
+Bạn cần:
+1. Railway sẽ tự động deploy
+2. Đảm bảo biến môi trường `GOOGLE_DRIVE_API_KEY` và `GOOGLE_DRIVE_PROJECT_FOLDER_ID` đã được cấu hình
+3. Test bằng cách tạo folder trên Google Drive và chọn trong Admin Dashboard
