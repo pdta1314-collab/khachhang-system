@@ -41,6 +41,16 @@ function AdminDashboard() {
   // Batch video upload states
   const [scanningVideosFolder, setScanningVideosFolder] = useState(false);
   const [scanningGoogleDrive, setScanningGoogleDrive] = useState(false);
+  
+  // Logs state for scan/upload
+  const [logs, setLogs] = useState([]);
+  const [autoScanEnabled, setAutoScanEnabled] = useState(true);
+  
+  // Add log function
+  const addLog = (message, type = 'info') => {
+    const timestamp = new Date().toLocaleTimeString('vi-VN');
+    setLogs(prev => [{ message, type, timestamp }, ...prev].slice(0, 50)); // Keep last 50 logs
+  };
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,10 +79,21 @@ function AdminDashboard() {
       }, 5000);
     }
     
+    // Auto-scan Google Drive mỗi 30 giây
+    let scanInterval;
+    if (autoScanEnabled) {
+      scanInterval = setInterval(() => {
+        autoScanGoogleDrive(token);
+      }, 30000);
+      // Scan ngay khi load trang
+      autoScanGoogleDrive(token);
+    }
+    
     return () => {
       if (interval) clearInterval(interval);
+      if (scanInterval) clearInterval(scanInterval);
     };
-  }, [navigate, autoRefresh]);
+  }, [navigate, autoRefresh, autoScanEnabled]);
 
   const fetchCustomers = async (token) => {
     try {
@@ -315,22 +336,64 @@ function AdminDashboard() {
   const handleScanVideosFolder = async () => {
     const token = localStorage.getItem('adminToken');
     setScanningVideosFolder(true);
+    addLog('🔄 Đang scan thư mục videos...', 'info');
     try {
       const response = await axios.post(`${API_URL}/customers/videos/scan-videos`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.data.success) {
-        alert(response.data.message);
-        if (response.data.errors && response.data.errors.length > 0) {
-          alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
+        const { uploaded, files, errors } = response.data;
+        addLog(`✅ Đã upload ${uploaded} video từ thư mục`, 'success');
+        if (files && files.length > 0) {
+          files.forEach(f => {
+            addLog(`  📹 ${f.filename} → Khách hàng ID${f.customerId}`, 'success');
+          });
         }
+        if (errors && errors.length > 0) {
+          errors.forEach(e => {
+            addLog(`⚠️ ${e.filename}: ${e.error}`, 'warning');
+          });
+        }
+        alert(response.data.message);
         fetchCustomers(token);
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Lỗi khi scan thư mục videos');
+      addLog(`❌ Lỗi scan thư mục: ${err.response?.data?.error || err.message}`, 'error');
     } finally {
       setScanningVideosFolder(false);
+    }
+  };
+
+  // Auto-scan Google Drive - không hiển thị alert, chỉ log
+  const autoScanGoogleDrive = async (token) => {
+    try {
+      addLog('🔄 Đang scan Google Drive...', 'info');
+      const response = await axios.post(`${API_URL}/customers/videos/scan-google-drive`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        const { linked, files, errors } = response.data;
+        if (linked > 0) {
+          addLog(`✅ Đã link ${linked} video mới từ Google Drive`, 'success');
+          files.forEach(f => {
+            addLog(`  📹 ${f.filename} → Khách hàng ID${f.customerId}`, 'success');
+          });
+          fetchCustomers(token);
+        }
+        if (errors && errors.length > 0) {
+          errors.forEach(e => {
+            addLog(`⚠️ ${e.filename}: ${e.error}`, 'warning');
+          });
+        }
+        if (linked === 0 && (!errors || errors.length === 0)) {
+          addLog('ℹ️ Không có video mới', 'info');
+        }
+      }
+    } catch (err) {
+      addLog(`❌ Lỗi scan: ${err.response?.data?.error || err.message}`, 'error');
     }
   };
 
@@ -338,19 +401,30 @@ function AdminDashboard() {
     const token = localStorage.getItem('adminToken');
     setScanningGoogleDrive(true);
     try {
+      addLog('🔄 Đang scan Google Drive (thủ công)...', 'info');
       const response = await axios.post(`${API_URL}/customers/videos/scan-google-drive`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.data.success) {
-        alert(response.data.message);
-        if (response.data.errors && response.data.errors.length > 0) {
-          alert(`Có ${response.data.errors.length} lỗi:\n${response.data.errors.map(e => `${e.filename}: ${e.error}`).join('\n')}`);
+        const { linked, files, errors } = response.data;
+        addLog(`✅ Đã link ${linked} video`, 'success');
+        if (files && files.length > 0) {
+          files.forEach(f => {
+            addLog(`  📹 ${f.filename} → Khách hàng ID${f.customerId}`, 'success');
+          });
         }
+        if (errors && errors.length > 0) {
+          errors.forEach(e => {
+            addLog(`⚠️ ${e.filename}: ${e.error}`, 'warning');
+          });
+        }
+        alert(response.data.message);
         fetchCustomers(token);
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Lỗi khi scan Google Drive');
+      addLog(`❌ Lỗi scan: ${err.response?.data?.error || err.message}`, 'error');
     } finally {
       setScanningGoogleDrive(false);
     }
@@ -368,6 +442,7 @@ function AdminDashboard() {
 
     setUploading(true);
     setError(null);
+    addLog(`🔄 Đang upload video cho khách ${selectedCustomer.name}...`, 'info');
 
     try {
       await axios.post(`${API_URL}/customers/${selectedCustomer.id}/video`, formData, {
@@ -380,9 +455,11 @@ function AdminDashboard() {
       setUploadFile(null);
       setSelectedCustomer(null);
       fetchCustomers(token);
+      addLog(`✅ Đã upload video cho khách ${selectedCustomer.name}`, 'success');
       alert('Upload video thành công!');
     } catch (err) {
       setError(err.response?.data?.error || 'Lỗi khi upload video');
+      addLog(`❌ Lỗi upload video cho khách ${selectedCustomer.name}: ${err.response?.data?.error || err.message}`, 'error');
     } finally {
       setUploading(false);
     }
@@ -694,7 +771,81 @@ function AdminDashboard() {
 
       <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#666' }}>
         <p>Tổng số: <strong>{customers.length}</strong> khách hàng</p>
-        <p>Có video: <strong>{customers.filter(c => c.video_path).length}</strong> / {customers.length}</p>
+        <p>Có video: <strong>{customers.filter(c => c.videoCount > 0).reduce((sum, c) => sum + c.videoCount, 0)}</strong> video / {customers.filter(c => c.videoCount > 0).length} khách</p>
+      </div>
+
+      {/* Auto-scan toggle */}
+      <div style={{ marginTop: '15px', padding: '10px 15px', background: '#f0f7ff', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+          <input
+            type="checkbox"
+            checked={autoScanEnabled}
+            onChange={(e) => {
+              setAutoScanEnabled(e.target.checked);
+              addLog(e.target.checked ? '✅ Auto-scan đã BẬT (30s)' : '⏹️ Auto-scan đã TẮT', 'info');
+            }}
+          />
+          <span>Auto-scan Google Drive (30s)</span>
+        </label>
+      </div>
+
+      {/* Logs Box */}
+      <div style={{ marginTop: '20px', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+        <div style={{ 
+          padding: '12px 16px', 
+          background: '#f5f5f5', 
+          borderBottom: '1px solid #ddd',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <strong style={{ fontSize: '14px' }}>📋 Nhật ký hoạt động (Logs)</strong>
+          <button 
+            onClick={() => setLogs([])}
+            style={{ 
+              fontSize: '12px', 
+              padding: '4px 12px', 
+              background: '#dc3545', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Xóa logs
+          </button>
+        </div>
+        <div style={{ 
+          maxHeight: '200px', 
+          overflowY: 'auto', 
+          padding: '10px',
+          background: '#fafafa',
+          fontSize: '13px',
+          fontFamily: 'monospace'
+        }}>
+          {logs.length === 0 ? (
+            <div style={{ color: '#999', textAlign: 'center', padding: '20px' }}>
+              Chưa có log nào...
+            </div>
+          ) : (
+            logs.map((log, index) => (
+              <div key={index} style={{ 
+                padding: '4px 8px', 
+                marginBottom: '2px',
+                borderRadius: '3px',
+                background: log.type === 'error' ? '#ffebee' : 
+                           log.type === 'success' ? '#e8f5e9' : 
+                           log.type === 'warning' ? '#fff3e0' : 'transparent',
+                color: log.type === 'error' ? '#c62828' : 
+                       log.type === 'success' ? '#2e7d32' : 
+                       log.type === 'warning' ? '#ef6c00' : '#666'
+              }}>
+                <span style={{ color: '#999', fontSize: '11px' }}>[{log.timestamp}]</span>{' '}
+                {log.message}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Upload Modal */}
