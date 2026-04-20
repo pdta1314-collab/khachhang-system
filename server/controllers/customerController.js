@@ -6,10 +6,14 @@ const path = require('path');
 const fs = require('fs');
 const googleDriveService = require('../services/googleDriveService');
 
-// Trả về relative path, frontend sẽ tự ghép domain để tránh lỗi BASE_URL
+// Trả về video URL - nhận diện link Google Drive hoặc local path
 const getVideoPath = (videoPath) => {
   if (!videoPath) return null;
-  // Chỉ lấy phần uploads/filename từ full path
+  // Nếu là link Google Drive (bắt đầu bằng http), trả về nguyên vẹn
+  if (videoPath.startsWith('http')) {
+    return videoPath;
+  }
+  // Nếu là local path, chỉ lấy phần uploads/filename
   const match = videoPath.match(/uploads[\\/](.+)$/);
   return match ? `/uploads/${match[1]}` : `/uploads/${path.basename(videoPath)}`;
 };
@@ -696,7 +700,7 @@ exports.scanVideosFolder = async (req, res) => {
   }
 };
 
-// Scan và upload video từ Google Drive
+// Scan và link video từ Google Drive (KHÔNG download về server)
 exports.scanGoogleDriveVideos = async (req, res) => {
   try {
     // Lấy danh sách video từ Google Drive
@@ -706,21 +710,15 @@ exports.scanGoogleDriveVideos = async (req, res) => {
       return res.json({
         success: true,
         message: 'Folder Google Drive không có file video nào.',
-        uploaded: 0,
+        linked: 0,
         files: [],
         errors: []
       });
     }
 
-    let uploadedCount = 0;
+    let linkedCount = 0;
     const errors = [];
-    const uploadedFiles = [];
-
-    // Tạo thư mục temp để download
-    const tempDir = path.join(__dirname, '../uploads/temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    const linkedFiles = [];
 
     for (const file of driveFiles) {
       try {
@@ -742,32 +740,20 @@ exports.scanGoogleDriveVideos = async (req, res) => {
           continue;
         }
         
-        // Download file từ Google Drive
-        const tempPath = path.join(tempDir, file.name);
-        await googleDriveService.downloadFile(file.id, tempPath);
+        // Tạo link Google Drive trực tiếp (KHÔNG download)
+        // Dùng webContentLink nếu có, hoặc tạo link download trực tiếp
+        const googleDriveUrl = file.webContentLink || `https://drive.google.com/uc?export=download&id=${file.id}`;
         
-        // Tạo thư mục cho khách hàng nếu chưa có
-        const customerFolder = path.join(__dirname, '../uploads', `customer_${customerId}`);
-        if (!fs.existsSync(customerFolder)) {
-          fs.mkdirSync(customerFolder, { recursive: true });
-        }
+        // Cập nhật video_path với link Google Drive
+        await Customer.updateVideo(customerId, googleDriveUrl);
         
-        // Di chuyển file vào thư mục khách hàng
-        const newFilename = `take_${takeNumber}_${Date.now()}${path.extname(file.name)}`;
-        const newPath = path.join(customerFolder, newFilename);
-        
-        fs.renameSync(tempPath, newPath);
-        
-        // Cập nhật video_path
-        const relativePath = `uploads/customer_${customerId}/${newFilename}`;
-        await Customer.updateVideo(customerId, relativePath);
-        
-        uploadedCount++;
-        uploadedFiles.push({
+        linkedCount++;
+        linkedFiles.push({
           customerId,
           customerName: customer.name,
-          filename: newFilename,
-          takeNumber
+          filename: file.name,
+          takeNumber,
+          googleDriveUrl
         });
         
       } catch (err) {
@@ -775,23 +761,17 @@ exports.scanGoogleDriveVideos = async (req, res) => {
       }
     }
     
-    // Xóa file temp
-    const tempFiles = fs.readdirSync(tempDir);
-    tempFiles.forEach(file => {
-      fs.unlinkSync(path.join(tempDir, file));
-    });
-    
     res.json({
       success: true,
-      message: uploadedCount > 0 
-        ? `Đã upload ${uploadedCount} video thành công từ Google Drive`
-        : 'Không có video nào được upload',
-      uploaded: uploadedCount,
-      files: uploadedFiles,
+      message: linkedCount > 0 
+        ? `Đã link ${linkedCount} video từ Google Drive`
+        : 'Không có video nào được link',
+      linked: linkedCount,
+      files: linkedFiles,
       errors
     });
   } catch (error) {
-    console.error('Lỗi scan và upload từ Google Drive:', error);
+    console.error('Lỗi scan và link từ Google Drive:', error);
     res.status(500).json({ error: 'Lỗi server khi scan Google Drive: ' + error.message });
   }
 };
