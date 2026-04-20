@@ -55,9 +55,8 @@ function AdminDashboard() {
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [googleDriveFolders, setGoogleDriveFolders] = useState([]);
   const [loadingFolders, setLoadingFolders] = useState(false);
-  const [googleSheetUrl, setGoogleSheetUrl] = useState(null);
-  const [showSheetModal, setShowSheetModal] = useState(false);
-  const [syncingSheet, setSyncingSheet] = useState(false);
+  const [csvFileId, setCsvFileId] = useState(null);
+  const [uploadingCsv, setUploadingCsv] = useState(false);
   
   // Add log function - logs mới nhất ở cuối để auto-scroll đúng
   const addLog = (message, type = 'info') => {
@@ -101,21 +100,20 @@ function AdminDashboard() {
     setShowProjectModal(false);
     addLog(`📁 Đã chọn folder: ${folder.name}`, 'info');
 
-    // Create Google Sheets for the project
+    // Create CSV file for the project
     try {
-      addLog(`🔄 Đang tạo Google Sheets...`, 'info');
-      const sheetResponse = await axios.post(`${API_URL}/google-drive/create-sheet`,
-        { folderId: folder.id, fileName: `${folder.name}_customers.xlsx` },
+      addLog(`🔄 Đang tạo CSV file...`, 'info');
+      const csvResponse = await axios.post(`${API_URL}/google-drive/create-csv`,
+        { folderId: folder.id, fileName: `${folder.name}_customers.csv` },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (sheetResponse.data.success) {
-        setGoogleSheetUrl(sheetResponse.data.sheet.url);
-        setShowSheetModal(true);
-        addLog(`✅ Đã tạo Google Sheets`, 'success');
+      if (csvResponse.data.success) {
+        setCsvFileId(csvResponse.data.csv.id);
+        addLog(`✅ Đã tạo CSV file`, 'success');
       }
     } catch (err) {
-      addLog(`⚠️ Lỗi tạo Google Sheets: ${err.message}`, 'warning');
+      addLog(`⚠️ Lỗi tạo CSV: ${err.message}`, 'warning');
     }
 
     // Auto sync videos from selected folder
@@ -135,30 +133,92 @@ function AdminDashboard() {
     }
   };
 
-  // Sync data from Google Sheets
-  const handleSyncSheet = async () => {
+  // Download CSV from Google Drive
+  const handleDownloadCsv = async () => {
+    if (!csvFileId) {
+      alert('Không có CSV file để download');
+      return;
+    }
+
     const token = localStorage.getItem('adminToken');
-    setSyncingSheet(true);
-
     try {
-      addLog(`🔄 Đang sync dữ liệu từ Google Sheets...`, 'info');
-      const spreadsheetId = googleSheetUrl.match(/\/d\/(.+)$/)[1];
-
-      const response = await axios.post(`${API_URL}/google-drive/sync-sheet`,
-        { spreadsheetId },
-        { headers: { Authorization: `Bearer ${token}` } }
+      addLog(`🔄 Đang download CSV...`, 'info');
+      const response = await axios.get(`${API_URL}/google-drive/download-csv/${csvFileId}`,
+        { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' }
       );
 
-      if (response.data.success) {
-        addLog(`✅ Đã sync ${response.data.updated} khách hàng`, 'success');
-        fetchCustomers(token);
-        alert(`Đã sync ${response.data.updated} khách hàng thành công!`);
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'customers.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      addLog(`✅ Đã download CSV thành công`, 'success');
+    } catch (err) {
+      addLog(`❌ Lỗi download CSV: ${err.message}`, 'error');
+      alert('Lỗi khi download CSV: ' + err.message);
+    }
+  };
+
+  // Upload CSV and sync to database
+  const handleUploadCsv = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const token = localStorage.getItem('adminToken');
+    setUploadingCsv(true);
+
+    try {
+      addLog(`🔄 Đang upload CSV...`, 'info');
+
+      // Parse CSV
+      const text = await file.text();
+      const rows = text.split('\n').map(row => row.split(','));
+      const headers = rows[0];
+      const dataRows = rows.slice(1).filter(row => row.length > 1);
+
+      // Sync to database
+      let updated = 0;
+      let errors = [];
+
+      for (const row of dataRows) {
+        try {
+          const [id, name, outfit, phone, registeredDate, status, videoCount] = row.map(cell => cell?.trim?.() || cell);
+
+          if (!id) {
+            errors.push({ row, error: 'Thiếu ID khách hàng' });
+            continue;
+          }
+
+          const customerId = parseInt(id);
+
+          await axios.put(`${API_URL}/customers/${customerId}`,
+            { name, outfit, phone, status },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          updated++;
+        } catch (err) {
+          errors.push({ row, error: err.message });
+        }
+      }
+
+      addLog(`✅ Đã sync ${updated} khách hàng từ CSV`, 'success');
+      fetchCustomers(token);
+      alert(`Đã sync ${updated} khách hàng thành công!`);
+
+      if (errors.length > 0) {
+        console.log('Errors:', errors);
       }
     } catch (err) {
-      addLog(`❌ Lỗi sync: ${err.message}`, 'error');
-      alert('Lỗi khi sync dữ liệu: ' + err.message);
+      addLog(`❌ Lỗi upload CSV: ${err.message}`, 'error');
+      alert('Lỗi khi upload CSV: ' + err.message);
     } finally {
-      setSyncingSheet(false);
+      setUploadingCsv(false);
+      event.target.value = '';
     }
   };
 
@@ -732,6 +792,23 @@ function AdminDashboard() {
             <button onClick={fetchGoogleDriveFolders} disabled={loadingFolders} className="btn btn-primary">
               {loadingFolders ? 'Đang tải...' : selectedProjectFolder ? `📁 ${selectedProjectFolder.name}` : '📁 DỰ ÁN'}
             </button>
+            {csvFileId && (
+              <>
+                <button onClick={handleDownloadCsv} className="btn btn-success">
+                  📥 Download CSV
+                </button>
+                <label className="btn btn-primary" style={{ cursor: uploadingCsv ? 'not-allowed' : 'pointer', opacity: uploadingCsv ? 0.5 : 1 }}>
+                  {uploadingCsv ? 'Đang upload...' : '📤 Upload CSV'}
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleUploadCsv}
+                    disabled={uploadingCsv}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </>
+            )}
             <button onClick={handleScanGoogleDrive} disabled={scanningGoogleDrive} className="btn btn-primary">
               {scanningGoogleDrive ? 'Đang scan...' : '☁️ Scan Google Drive'}
             </button>
@@ -1474,78 +1551,6 @@ function AdminDashboard() {
                 <li>Xóa video chỉ xóa link trong hệ thống, không xóa file gốc trên Google Drive</li>
                 <li>Để thêm video mới, upload file vào Google Drive với tên định dạng <strong>ID{selectedCustomerForVideos.id}_T1.mp4</strong></li>
               </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal embed Google Sheets */}
-      {showSheetModal && googleSheetUrl && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }} onClick={() => setShowSheetModal(false)}>
-          <div style={{
-            background: 'white',
-            padding: '24px',
-            borderRadius: '12px',
-            maxWidth: '95%',
-            width: '1200px',
-            height: '80vh',
-            display: 'flex',
-            flexDirection: 'column'
-          }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0 }}>📊 Google Sheets - {selectedProjectFolder?.name}</h3>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={handleSyncSheet}
-                  disabled={syncingSheet}
-                  style={{
-                    padding: '8px 16px',
-                    background: syncingSheet ? '#ccc' : '#667eea',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: syncingSheet ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {syncingSheet ? 'Đang sync...' : '🔄 Sync Database'}
-                </button>
-                <button
-                  onClick={() => setShowSheetModal(false)}
-                  style={{
-                    padding: '8px 16px',
-                    background: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Đóng
-                </button>
-              </div>
-            </div>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <iframe
-                src={`${googleSheetUrl}?rm=minimal`}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 'none',
-                  borderRadius: '8px'
-                }}
-                title="Google Sheets"
-              />
             </div>
           </div>
         </div>

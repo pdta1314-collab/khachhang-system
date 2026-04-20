@@ -79,8 +79,8 @@ router.post('/sync-folder', adminController.verifyToken, async (req, res) => {
   }
 });
 
-// Tạo Google Sheets rỗng trong folder (admin only)
-router.post('/create-sheet', adminController.verifyToken, async (req, res) => {
+// Tạo CSV rỗng trong folder (admin only)
+router.post('/create-csv', adminController.verifyToken, async (req, res) => {
   try {
     const { folderId, fileName } = req.body;
 
@@ -88,70 +88,33 @@ router.post('/create-sheet', adminController.verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Thiếu folderId' });
     }
 
-    const sheetName = fileName || 'customers.xlsx';
+    const csvName = fileName || 'customers.csv';
 
-    const sheet = await googleDriveService.createEmptyGoogleSheet(sheetName, folderId);
+    const csv = await googleDriveService.createEmptyCSVFile(csvName, folderId);
 
     res.json({
       success: true,
-      message: 'Đã tạo Google Sheets thành công',
-      sheet: sheet
+      message: 'Đã tạo CSV thành công',
+      csv: csv
     });
   } catch (error) {
-    console.error('Lỗi tạo Google Sheets:', error);
+    console.error('Lỗi tạo CSV:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Sync dữ liệu từ Google Sheets vào database (admin only)
-router.post('/sync-sheet', adminController.verifyToken, async (req, res) => {
+// Download CSV từ Google Drive (admin only)
+router.get('/download-csv/:fileId', adminController.verifyToken, async (req, res) => {
   try {
-    const { spreadsheetId } = req.body;
+    const { fileId } = req.params;
 
-    if (!spreadsheetId) {
-      return res.status(400).json({ error: 'Thiếu spreadsheetId' });
-    }
+    const fileData = await googleDriveService.downloadFileFromDrive(fileId);
 
-    // Đọc dữ liệu từ Google Sheets
-    const rows = await googleDriveService.readGoogleSheetData(spreadsheetId);
-
-    const Customer = require('../models/Customer');
-    let updated = 0;
-    let errors = [];
-
-    for (const row of rows) {
-      try {
-        const [id, name, outfit, phone, registeredDate, status, videoCount] = row;
-
-        if (!id) {
-          errors.push({ row, error: 'Thiếu ID khách hàng' });
-          continue;
-        }
-
-        const customerId = parseInt(id);
-
-        // Cập nhật customer
-        await Customer.update(customerId, {
-          name: name,
-          outfit: outfit,
-          phone: phone,
-          status: status
-        });
-
-        updated++;
-      } catch (err) {
-        errors.push({ row, error: err.message });
-      }
-    }
-
-    res.json({
-      success: true,
-      message: `Đã sync ${updated} khách hàng từ Google Sheets`,
-      updated,
-      errors
-    });
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=customers.csv');
+    res.send(fileData);
   } catch (error) {
-    console.error('Lỗi sync Google Sheets:', error);
+    console.error('Lỗi download CSV:', error);
     res.status(500).json({ error: error.message });
   }
 });
