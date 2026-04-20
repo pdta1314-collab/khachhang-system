@@ -153,6 +153,33 @@ class Customer {
     }
   }
 
+  // Xóa 1 video cụ thể khỏi danh sách (hỗ trợ nhiều video)
+  static async removeVideo(id, videoUrlToRemove) {
+    const customer = await this.getById(id);
+    if (!customer || !customer.video_path) return { changes: 0 };
+    
+    let videos = [];
+    try {
+      videos = JSON.parse(customer.video_path);
+      if (!Array.isArray(videos)) videos = [videos];
+    } catch (e) {
+      videos = [customer.video_path];
+    }
+    
+    // Lọc bỏ video cần xóa
+    const newVideos = videos.filter(url => url !== videoUrlToRemove);
+    
+    if (newVideos.length === videos.length) return { changes: 0 };
+    
+    const sql = 'UPDATE customers SET video_path = $1 WHERE id = $2';
+    try {
+      await pool.query(sql, [newVideos.length > 0 ? JSON.stringify(newVideos) : null, id]);
+      return { changes: 1, videoCount: newVideos.length };
+    } catch (err) {
+      throw err;
+    }
+  }
+
   static async delete(id) {
     const sql = 'DELETE FROM customers WHERE id = $1';
     

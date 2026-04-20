@@ -34,6 +34,10 @@ function AdminDashboard() {
   const [imageFiles, setImageFiles] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
 
+  // Video management states
+  const [selectedCustomerForVideos, setSelectedCustomerForVideos] = useState(null);
+  const [removingVideo, setRemovingVideo] = useState(false);
+
   // Multi-select delete states
   const [selectedIds, setSelectedIds] = useState([]);
   const [deleting, setDeleting] = useState(false);
@@ -208,6 +212,44 @@ function AdminDashboard() {
   const handleOpenImageModal = (customer) => {
     setSelectedCustomerForImages(customer);
     fetchCustomerImages(customer.id);
+  };
+
+  const handleOpenVideoModal = (customer) => {
+    setSelectedCustomerForVideos(customer);
+  };
+
+  const handleRemoveVideo = async (videoUrl) => {
+    if (!selectedCustomerForVideos) return;
+    
+    if (!window.confirm('Bạn có chắc muốn xóa video này?')) return;
+    
+    const token = localStorage.getItem('adminToken');
+    setRemovingVideo(true);
+    
+    try {
+      addLog(`🔄 Đang xóa video cho khách ${selectedCustomerForVideos.name}...`, 'info');
+      const encodedUrl = encodeURIComponent(videoUrl);
+      await axios.delete(`${API_URL}/customers/${selectedCustomerForVideos.id}/video/${encodedUrl}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      addLog(`✅ Đã xóa video thành công`, 'success');
+      // Refresh customer data
+      const updatedCustomer = customers.find(c => c.id === selectedCustomerForVideos.id);
+      if (updatedCustomer) {
+        setSelectedCustomerForVideos({
+          ...updatedCustomer,
+          videoUrls: updatedCustomer.videoUrls?.filter(url => url !== videoUrl) || [],
+          videoCount: (updatedCustomer.videoCount || 1) - 1
+        });
+      }
+      fetchCustomers(token);
+    } catch (err) {
+      addLog(`❌ Lỗi xóa video: ${err.response?.data?.error || err.message}`, 'error');
+      alert('Lỗi khi xóa video: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setRemovingVideo(false);
+    }
   };
 
   const handleImageUpload = async () => {
@@ -730,6 +772,18 @@ function AdminDashboard() {
                     >
                       Ảnh
                     </button>
+                    <button 
+                      onClick={() => handleOpenVideoModal(customer)}
+                      className="btn btn-secondary"
+                      style={{ 
+                        padding: '8px 16px', 
+                        fontSize: '14px',
+                        backgroundColor: customer.videoCount > 0 ? '#e3f2fd' : undefined,
+                        color: customer.videoCount > 0 ? '#1976d2' : undefined
+                      }}
+                    >
+                      {customer.videoCount > 0 ? `Video (${customer.videoCount})` : 'Video'}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -1151,6 +1205,158 @@ function AdminDashboard() {
               >
                 Mở trang tải video
               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Management Modal */}
+      {selectedCustomerForVideos && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ maxWidth: '700px', width: '95%', maxHeight: '90vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3>
+                Quản lý video: {selectedCustomerForVideos.name} (ID: {selectedCustomerForVideos.id})
+              </h3>
+              <button 
+                onClick={() => setSelectedCustomerForVideos(null)}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  fontSize: '24px', 
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <p style={{ marginBottom: '15px', color: '#666' }}>
+              Số điện thoại: {selectedCustomerForVideos.phone}
+            </p>
+
+            {/* Video List */}
+            <h4 style={{ marginBottom: '15px' }}>
+              Danh sách video ({selectedCustomerForVideos.videoCount || 0} video)
+            </h4>
+            
+            {(!selectedCustomerForVideos.videoUrls || selectedCustomerForVideos.videoUrls.length === 0) ? (
+              <p style={{ textAlign: 'center', color: '#666', padding: '40px', background: '#f5f5f5', borderRadius: '8px' }}>
+                Chưa có video nào. Hãy upload video qua Google Drive hoặc nút "Upload".
+              </p>
+            ) : (
+              <div style={{ marginBottom: '20px' }}>
+                {selectedCustomerForVideos.videoUrls.map((videoUrl, index) => (
+                  <div key={index} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '15px',
+                    marginBottom: '10px',
+                    background: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #dee2e6'
+                  }}>
+                    <div style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      background: '#2563eb', 
+                      color: 'white',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 'bold',
+                      flexShrink: 0
+                    }}>
+                      {index + 1}
+                    </div>
+                    
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ 
+                        margin: 0, 
+                        fontSize: '13px', 
+                        color: '#333',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {videoUrl.includes('drive.google.com') ? '📁 Google Drive Video' : `📁 Video ${index + 1}`}
+                      </p>
+                      <p style={{ 
+                        margin: '4px 0 0 0', 
+                        fontSize: '11px', 
+                        color: '#666',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {videoUrl}
+                      </p>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => window.open(videoUrl, '_blank')}
+                        style={{
+                          padding: '8px 12px',
+                          background: '#10b981',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Xem
+                      </button>
+                      <button
+                        onClick={() => handleRemoveVideo(videoUrl)}
+                        disabled={removingVideo}
+                        style={{
+                          padding: '8px 12px',
+                          background: removingVideo ? '#ccc' : '#dc3545',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          cursor: removingVideo ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {removingVideo ? '...' : 'Xóa'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Quick Actions */}
+            <div style={{ 
+              padding: '15px', 
+              background: '#e3f2fd', 
+              borderRadius: '8px',
+              marginTop: '20px'
+            }}>
+              <h5 style={{ marginBottom: '10px', color: '#1565c0' }}>💡 Hướng dẫn:</h5>
+              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#333', lineHeight: '1.6' }}>
+                <li>Video từ Google Drive sẽ tự động được thêm khi scan</li>
+                <li>Bấm "Xem" để kiểm tra video trước khi xóa</li>
+                <li>Xóa video chỉ xóa link trong hệ thống, không xóa file gốc trên Google Drive</li>
+                <li>Để thêm video mới, upload file vào Google Drive với tên định dạng <strong>ID{selectedCustomerForVideos.id}_T1.mp4</strong></li>
+              </ul>
             </div>
           </div>
         </div>

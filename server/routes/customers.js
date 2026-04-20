@@ -27,6 +27,7 @@ router.post('/videos/scan-google-drive', adminController.verifyToken, customerCo
 // Video routes (admin only)
 router.post('/:id/video', adminController.verifyToken, customerController.uploadMiddleware.single('video'), customerController.uploadVideo);
 router.delete('/:id/video', adminController.verifyToken, customerController.deleteVideo);
+router.delete('/:id/video/:videoUrl', adminController.verifyToken, customerController.removeVideo);
 
 // Image routes (admin only) - upload nhiều ảnh cùng lúc
 router.post('/:id/images', adminController.verifyToken, customerController.uploadImageMiddleware.array('images', 50), customerController.uploadImages);

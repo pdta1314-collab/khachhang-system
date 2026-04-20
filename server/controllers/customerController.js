@@ -286,6 +286,36 @@ exports.deleteVideo = async (req, res) => {
   }
 };
 
+// Xóa 1 video cụ thể khỏi danh sách (hỗ trợ nhiều video)
+exports.removeVideo = async (req, res) => {
+  try {
+    const { id, videoUrl } = req.params;
+    
+    // Decode URL từ route parameter
+    const decodedVideoUrl = decodeURIComponent(videoUrl);
+    
+    const customer = await Customer.getById(id);
+    if (!customer) {
+      return res.status(404).json({ error: 'Không tìm thấy khách hàng' });
+    }
+
+    const result = await Customer.removeVideo(id, decodedVideoUrl);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy video để xóa' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Đã xóa video thành công',
+      videoCount: result.videoCount
+    });
+  } catch (error) {
+    console.error('Lỗi xóa video cụ thể:', error);
+    res.status(500).json({ error: 'Lỗi server khi xóa video' });
+  }
+};
+
 // Xóa khách hàng
 exports.deleteCustomer = async (req, res) => {
   try {
