@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
@@ -243,16 +243,23 @@ function AdminDashboard() {
       });
       
       addLog(`✅ Đã xóa video thành công`, 'success');
-      // Refresh customer data
-      const updatedCustomer = customers.find(c => c.id === selectedCustomerForVideos.id);
-      if (updatedCustomer) {
-        setSelectedCustomerForVideos({
-          ...updatedCustomer,
-          videoUrls: updatedCustomer.videoUrls?.filter(url => url !== videoUrl) || [],
-          videoCount: (updatedCustomer.videoCount || 1) - 1
-        });
-      }
-      fetchCustomers(token);
+      // Cập nhật state modal
+      const currentUrls = selectedCustomerForVideos.videoUrls || [];
+      const newUrls = currentUrls.filter(url => url !== videoUrl);
+      const newCount = newUrls.length;
+      
+      setSelectedCustomerForVideos({
+        ...selectedCustomerForVideos,
+        videoUrls: newUrls,
+        videoCount: newCount
+      });
+      
+      // Cập nhật customers state để bảng refresh
+      setCustomers(prev => prev.map(c => 
+        c.id === selectedCustomerForVideos.id 
+          ? { ...c, videoUrls: newUrls, videoCount: newCount }
+          : c
+      ));
     } catch (err) {
       addLog(`❌ Lỗi xóa video: ${err.response?.data?.error || err.message}`, 'error');
       alert('Lỗi khi xóa video: ' + (err.response?.data?.error || err.message));
@@ -1225,48 +1232,40 @@ function AdminDashboard() {
 
       {/* Video Management Modal */}
       {selectedCustomerForVideos && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div className="card" style={{ maxWidth: '700px', width: '95%', maxHeight: '90vh', overflow: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3>
+        <div className="modal" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: '1000' }} onClick={() => setSelectedCustomerForVideos(null)}>
+          <div className="modal-content" style={{ maxWidth: '700px', width: '95%', margin: 'auto', backgroundColor: 'white', borderRadius: '12px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e0e0e0', paddingBottom: '15px' }}>
+              <h3 style={{ color: '#333', margin: 0 }}>
                 Quản lý video: {selectedCustomerForVideos.name} (ID: {selectedCustomerForVideos.id})
               </h3>
               <button 
+                className="close-btn"
                 onClick={() => setSelectedCustomerForVideos(null)}
                 style={{ 
                   background: 'none', 
                   border: 'none', 
-                  fontSize: '24px', 
+                  fontSize: '28px', 
                   cursor: 'pointer',
-                  color: '#666'
+                  color: '#666',
+                  lineHeight: 1,
+                  padding: '0 4px'
                 }}
               >
-                ×
+                &times;
               </button>
             </div>
 
-            <p style={{ marginBottom: '15px', color: '#666' }}>
-              Số điện thoại: {selectedCustomerForVideos.phone}
+            <p style={{ marginBottom: '15px', color: '#555', fontSize: '14px' }}>
+              Số điện thoại: <strong>{selectedCustomerForVideos.phone}</strong>
             </p>
 
             {/* Video List */}
-            <h4 style={{ marginBottom: '15px' }}>
+            <h4 style={{ marginBottom: '15px', color: '#222', fontWeight: '600' }}>
               Danh sách video ({selectedCustomerForVideos.videoCount || 0} video)
             </h4>
             
             {(!selectedCustomerForVideos.videoUrls || selectedCustomerForVideos.videoUrls.length === 0) ? (
-              <p style={{ textAlign: 'center', color: '#666', padding: '40px', background: '#f5f5f5', borderRadius: '8px' }}>
+              <p style={{ textAlign: 'center', color: '#444', padding: '40px', background: '#f5f5f5', borderRadius: '8px', fontSize: '14px' }}>
                 Chưa có video nào. Hãy upload video qua Google Drive hoặc nút "Upload".
               </p>
             ) : (
@@ -1300,8 +1299,9 @@ function AdminDashboard() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ 
                         margin: 0, 
-                        fontSize: '13px', 
-                        color: '#333',
+                        fontSize: '14px', 
+                        color: '#000',
+                        fontWeight: '500',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap'
@@ -1311,7 +1311,7 @@ function AdminDashboard() {
                       <p style={{ 
                         margin: '4px 0 0 0', 
                         fontSize: '11px', 
-                        color: '#666',
+                        color: '#555',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap'
@@ -1363,8 +1363,8 @@ function AdminDashboard() {
               borderRadius: '8px',
               marginTop: '20px'
             }}>
-              <h5 style={{ marginBottom: '10px', color: '#1565c0' }}>💡 Hướng dẫn:</h5>
-              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#333', lineHeight: '1.6' }}>
+              <h5 style={{ marginBottom: '10px', color: '#0d47a1', fontWeight: '600' }}>💡 Hướng dẫn:</h5>
+              <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#222', lineHeight: '1.6' }}>
                 <li>Video từ Google Drive sẽ tự động được thêm khi scan</li>
                 <li>Bấm "Xem" để kiểm tra video trước khi xóa</li>
                 <li>Xóa video chỉ xóa link trong hệ thống, không xóa file gốc trên Google Drive</li>
