@@ -136,7 +136,7 @@ function VideoDownload() {
             zIndex: -2
           }}
         >
-          <source src="https://drive.google.com/uc?export=download&id=1NHZqoBdxTkQTrkgM6Z24qNq-HGcPrdLN" type="video/mp4" />
+          <source src="/trumso.mp4" type="video/mp4" />
         </video>
         <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', position: 'relative', zIndex: 1 }}>
         <div style={{ padding: '40px' }}>
@@ -168,7 +168,7 @@ function VideoDownload() {
             zIndex: -2
           }}
         >
-          <source src="https://drive.google.com/uc?export=download&id=1NHZqoBdxTkQTrkgM6Z24qNq-HGcPrdLN" type="video/mp4" />
+          <source src="/trumso.mp4" type="video/mp4" />
         </video>
         <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', padding: '32px' }}>
@@ -203,7 +203,7 @@ function VideoDownload() {
           zIndex: -2
         }}
       >
-        <source src="https://drive.google.com/uc?export=download&id=1NHZqoBdxTkQTrkgM6Z24qNq-HGcPrdLN" type="video/mp4" />
+        <source src="/trumso.mp4" type="video/mp4" />
       </video>
       <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', padding: '20px', position: 'relative', zIndex: 1 }}>
       {/* Logo làm tiêu đề trang - nằm ngoài card */}
