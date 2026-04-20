@@ -79,10 +79,10 @@ function CustomerForm() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
+      <div style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
         {!success ? (
           <>
-            <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+            <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
               NHẬP THÔNG TIN ĐĂNG KÝ
             </h1>
             
@@ -94,7 +94,7 @@ function CustomerForm() {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="name">Họ và tên</label>
+                <label htmlFor="name" style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Họ và tên</label>
                 <input
                   type="text"
                   id="name"
@@ -106,7 +106,7 @@ function CustomerForm() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone">Số điện thoại</label>
+                <label htmlFor="phone" style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Số điện thoại</label>
                 <input
                   type="tel"
                   id="phone"
@@ -118,7 +118,7 @@ function CustomerForm() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">Email (không bắt buộc)</label>
+                <label htmlFor="email" style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Email (không bắt buộc)</label>
                 <input
                   type="email"
                   id="email"
@@ -157,10 +157,10 @@ function CustomerForm() {
         ) : (
           <>
             <div className="success-message">
-              <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
                 Đăng ký thành công!
               </h2>
-              <p style={{ textAlign: 'center' }}>
+              <p style={{ textAlign: 'center', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 Quý khách vui lòng quét mã QR bên dưới để tải video sau khi sự kiện kết thúc.
               </p>
             </div>
@@ -200,34 +200,34 @@ function CustomerForm() {
             </div>
 
             {/* Hiển thị ID lớn */}
-            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(102, 126, 234, 0.4)', borderRadius: '16px', color: 'white', textAlign: 'center', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
-              <p style={{ fontSize: '14px', marginBottom: '8px', opacity: 0.9 }}>
+            <div style={{ marginTop: '20px', padding: '20px', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', marginBottom: '8px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 Số ID của bạn
               </p>
-              <p style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '8px' }}>
+              <p style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '8px', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
                 {customerData?.customer?.id}
               </p>
-              <p style={{ fontSize: '12px', opacity: 0.8 }}>
+              <p style={{ fontSize: '12px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 Vui lòng nhớ số ID này để nhận video
               </p>
             </div>
 
-            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(248, 249, 250, 0.25)', borderRadius: '16px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.5)' }}>
-              <p style={{ textAlign: 'center', marginBottom: '12px' }}>
+            <div style={{ marginTop: '20px', padding: '20px' }}>
+              <p style={{ textAlign: 'center', marginBottom: '12px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 <strong>Thông tin đã đăng ký:</strong>
               </p>
-              <p style={{ textAlign: 'center', marginBottom: '8px' }}>
+              <p style={{ textAlign: 'center', marginBottom: '8px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 <strong>Họ tên:</strong> {customerData?.customer?.name}
               </p>
-              <p style={{ textAlign: 'center', marginBottom: '8px' }}>
+              <p style={{ textAlign: 'center', marginBottom: '8px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 <strong>Số điện thoại:</strong> {customerData?.customer?.phone}
               </p>
               {customerData?.customer?.email && (
-                <p style={{ textAlign: 'center', marginBottom: '8px' }}>
+                <p style={{ textAlign: 'center', marginBottom: '8px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                   <strong>Email:</strong> {customerData?.customer?.email}
                 </p>
               )}
-              <p style={{ textAlign: 'center', fontSize: '14px', color: '#666' }}>
+              <p style={{ textAlign: 'center', fontSize: '14px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 <strong>Giờ đăng ký:</strong> {new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
               </p>
               <p style={{ textAlign: 'center', marginTop: '8px', padding: '8px', background: customerData?.customer?.status === 'Đang chụp' ? '#ffebee' : '#e3f2fd', borderRadius: '4px', color: customerData?.customer?.status === 'Đang chụp' ? '#c62828' : '#1565c0', fontWeight: 'bold' }}>
@@ -236,7 +236,7 @@ function CustomerForm() {
             </div>
 
             <div style={{ marginTop: '24px', textAlign: 'center' }}>
-              <p style={{ marginBottom: '12px', color: '#666', fontSize: '14px' }}>
+              <p style={{ marginBottom: '12px', color: '#fff', fontSize: '14px', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
                 Hoặc truy cập trực tiếp: <br/>
                 <a href={customerData?.downloadUrl} style={{ color: '#667eea', wordBreak: 'break-all' }}>
                   {customerData?.downloadUrl}

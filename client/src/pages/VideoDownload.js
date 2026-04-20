@@ -120,7 +120,7 @@ function VideoDownload() {
   if (loading) {
     return (
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-        <div style={{ background: 'rgba(255, 255, 255, 0.15)', borderRadius: '20px', padding: '40px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
+        <div style={{ padding: '40px' }}>
           <div className="loading">
             <div className="spinner"></div>
           </div>
@@ -132,10 +132,10 @@ function VideoDownload() {
   if (error) {
     return (
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-        <div style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
+        <div style={{ textAlign: 'center', padding: '32px' }}>
           <div className="error-message">
-            <h2 style={{ marginBottom: '16px' }}>Lỗi</h2>
-            <p>{error}</p>
+            <h2 style={{ marginBottom: '16px', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Lỗi</h2>
+            <p style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{error}</p>
           </div>
           <a href="/" className="btn btn-primary" style={{ marginTop: '20px' }}>
             Quay về trang chủ
@@ -162,27 +162,27 @@ function VideoDownload() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+      <div style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           TRANG TẢI VIDEO
         </h1>
 
-        <div style={{ marginBottom: '24px', padding: '20px', background: 'rgba(248, 249, 250, 0.2)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
-          <p style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '24px', padding: '20px' }}>
+          <p style={{ marginBottom: '12px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             <strong>Họ tên:</strong> {customer?.name}
           </p>
-          <p style={{ marginBottom: '12px' }}>
+          <p style={{ marginBottom: '12px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             <strong>Số điện thoại:</strong> {customer?.phone}
           </p>
           {customer?.email && (
-            <p style={{ marginBottom: '12px' }}>
+            <p style={{ marginBottom: '12px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
               <strong>Email:</strong> {customer.email}
             </p>
           )}
-          <p style={{ fontSize: '14px', color: '#666' }}>
+          <p style={{ fontSize: '14px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             <strong>Ngày đăng ký:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleDateString('vi-VN')}
           </p>
-          <p style={{ fontSize: '14px', color: '#666' }}>
+          <p style={{ fontSize: '14px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             <strong>Giờ đăng ký:</strong> {new Date(customer?.registrationTime || customer?.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
@@ -192,15 +192,11 @@ function VideoDownload() {
             {/* Hiển thị số lượng video */}
             <div style={{
               padding: '16px',
-              backgroundColor: 'rgba(212, 237, 218, 0.35)',
-              border: '1px solid rgba(40, 167, 69, 0.3)',
-              borderRadius: '16px',
               marginBottom: '16px',
               fontSize: '14px',
-              color: '#155724',
+              color: '#fff',
               textAlign: 'center',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
+              textShadow: '0 1px 2px rgba(0,0,0,0.5)'
             }}>
               <strong>✅ Có {customer.videoCount} video đã sẵn sàng để tải</strong>
             </div>
@@ -209,17 +205,13 @@ function VideoDownload() {
             {customer.videoUrls?.map((videoUrl, index) => (
               <div key={index} style={{
                 marginBottom: '16px',
-                padding: '16px',
-                backgroundColor: 'rgba(248, 249, 250, 0.2)',
-                borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.4)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)'
+                padding: '16px'
               }}>
-                <div style={{ 
-                  marginBottom: '12px', 
+                <div style={{
+                  marginBottom: '12px',
                   fontWeight: 'bold',
-                  color: '#333'
+                  color: '#fff',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.5)'
                 }}>
                   🎬 Video {index + 1} {customer.videoCount > 1 ? `/${customer.videoCount}` : ''}
                 </div>

@@ -42,8 +42,8 @@ function Login() {
 
   return (
     <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      <div style={{ width: '100%', maxWidth: '400px', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '24px' }}>
+      <div style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '24px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           Đăng nhập Admin
         </h1>
 
@@ -55,7 +55,7 @@ function Login() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username" style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Username</label>
             <input
               type="text"
               id="username"
@@ -67,7 +67,7 @@ function Login() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password" style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Password</label>
             <input
               type="password"
               id="password"
@@ -96,7 +96,7 @@ function Login() {
         </form>
 
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <p style={{ fontSize: '14px', color: '#666' }}>
+          <p style={{ fontSize: '14px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             Default: admin / admin123
           </p>
         </div>
