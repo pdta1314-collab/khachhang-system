@@ -42,7 +42,7 @@ function Login() {
 
   return (
     <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      <div style={{ width: '100%', maxWidth: '400px', background: 'rgba(255, 255, 255, 0.25)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.1), inset 0 0 20px rgba(255,255,255,0.2)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', border: '1px solid rgba(255,255,255,0.3)' }}>
+      <div style={{ width: '100%', maxWidth: '400px', background: 'rgba(255, 255, 255, 0.15)', borderRadius: '20px', padding: '32px', boxShadow: '0 8px 32px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#333', fontSize: '24px' }}>
           Đăng nhập Admin
         </h1>
