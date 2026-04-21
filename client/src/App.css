@@ -137,6 +137,16 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Neon Glow Animation */
+@keyframes neonPulse {
+  0%, 100% {
+    text-shadow: 0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f, 0 0 40px #0ff, 0 2px 4px rgba(0,0,0,0.5);
+  }
+  50% {
+    text-shadow: 0 0 5px #00f, 0 0 10px #00f, 0 0 15px #00f, 0 0 20px #0ff, 0 2px 4px rgba(0,0,0,0.5);
+  }
+}
+
 /* Admin Dashboard Styles */
 .admin-header {
   display: flex;

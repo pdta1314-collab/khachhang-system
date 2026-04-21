@@ -104,7 +104,7 @@ function CustomerForm() {
       <div style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
         {!success ? (
           <>
-            <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '24px', fontWeight: 'bold', textTransform: 'uppercase', textShadow: '0 2px 4px rgba(0,0,0,0.5)', lineHeight: '1.3' }}>
+            <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '24px', fontWeight: 'bold', textTransform: 'uppercase', textShadow: '0 0 10px #00f, 0 0 20px #00f, 0 0 30px #00f, 0 0 40px #0ff, 0 2px 4px rgba(0,0,0,0.5)', lineHeight: '1.3', animation: 'neonPulse 2s ease-in-out infinite' }}>
               NHẬP THÔNG TIN ĐĂNG KÝ
             </h1>
             
