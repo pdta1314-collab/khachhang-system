@@ -312,9 +312,28 @@ function VideoDownload() {
               lineHeight: '1.6'
             }}>
               <strong style={{ fontSize: '14px', marginBottom: '8px', display: 'block' }}>📱 Hướng dẫn tải video:</strong>
+              
+              {/* Android */}
+              <div style={{ marginTop: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                <strong style={{ fontSize: '14px', marginBottom: '6px', display: 'block', color: '#4fc3f7' }}>🤖 Android (Chrome):</strong>
+                <ol style={{ marginTop: '6px', paddingLeft: '18px', marginBottom: '4px' }}>
+                  <li style={{ marginBottom: '4px' }}>Trong Zalo, giữ nút "Tải video" → Chọn "Mở trong Chrome"</li>
+                  <li style={{ marginBottom: '4px' }}>Hoặc: Copy link từ Zalo → Mở Chrome → Paste link</li>
+                  <li style={{ marginBottom: '4px' }}>Trong Chrome: Video sẽ tải tự động về Downloads</li>
+                </ol>
+              </div>
+
+              {/* iOS */}
+              <div style={{ marginTop: '8px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
+                <strong style={{ fontSize: '14px', marginBottom: '6px', display: 'block', color: '#81c784' }}>🍎 iOS (Safari):</strong>
+                <ol style={{ marginTop: '6px', paddingLeft: '18px', marginBottom: '4px' }}>
+                  <li style={{ marginBottom: '4px' }}>Trong Zalo, giữ nút "Tải video" → Chọn "Mở trong Safari"</li>
+                  <li style={{ marginBottom: '4px' }}>Hoặc: Copy link từ Zalo → Mở Safari → Paste link</li>
+                  <li style={{ marginBottom: '4px' }}>Trong Safari: Video sẽ tải tự động về Files</li>
+                </ol>
+              </div>
+
               <ol style={{ marginTop: '8px', paddingLeft: '20px', marginBottom: '8px' }}>
-                <li style={{ marginBottom: '6px' }}>Bấm nút <strong>"📥 Tải video"</strong> cho từng video</li>
-                <li style={{ marginBottom: '6px' }}>Trên mobile: Video sẽ tải tự động hoặc mở trong trình duyệt</li>
                 <li style={{ marginBottom: '6px' }}>Trên máy tính: Kiểm tra thư mục Downloads</li>
                 <li style={{ marginBottom: '6px' }}>Nếu không tải được, giữ nút và chọn "Tải liên kết"</li>
               </ol>
