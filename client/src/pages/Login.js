@@ -116,12 +116,6 @@ function Login() {
         </form>
 
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <p style={{ fontSize: '14px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-            Default: admin / admin123
-          </p>
-        </div>
-
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <a href="/" style={{ color: '#667eea', textDecoration: 'none' }}>
             Quay về trang chủ
           </a>
