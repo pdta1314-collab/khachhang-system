@@ -99,7 +99,7 @@ function CustomerForm() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: '20px' }}>
+      <div style={{ width: '100%', maxWidth: '500px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#000', borderRadius: '20px' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>

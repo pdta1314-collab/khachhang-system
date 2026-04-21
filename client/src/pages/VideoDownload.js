@@ -149,9 +149,10 @@ function VideoDownload() {
           height: 'auto',
           aspectRatio: '16/9',
           backgroundImage: 'url(/trumso.jpg)',
-          backgroundSize: 'cover',
+          backgroundSize: 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          backgroundColor: '#000',
           borderRadius: '20px',
           zIndex: 1
         }} />
@@ -238,7 +239,7 @@ function VideoDownload() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: '20px' }}>
+      <div style={{ width: '100%', maxWidth: '500px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#000', borderRadius: '20px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           TRANG TẢI VIDEO
         </h1>
