@@ -317,9 +317,9 @@ function VideoDownload() {
               <div style={{ marginTop: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                 <strong style={{ fontSize: '14px', marginBottom: '6px', display: 'block', color: '#4fc3f7' }}>🤖 Android (Chrome):</strong>
                 <ol style={{ marginTop: '6px', paddingLeft: '18px', marginBottom: '4px' }}>
-                  <li style={{ marginBottom: '4px' }}>Trong Zalo, giữ nút "Tải video" → Chọn "Mở trong Chrome"</li>
-                  <li style={{ marginBottom: '4px' }}>Hoặc: Copy link từ Zalo → Mở Chrome → Paste link</li>
-                  <li style={{ marginBottom: '4px' }}>Trong Chrome: Video sẽ tải tự động về Downloads</li>
+                  <li style={{ marginBottom: '4px' }}>
+                    Trong Zalo, bấm vào dấu <img src="/icons8-more-25.png" alt="more" style={{ width: '20px', height: '20px', verticalAlign: 'middle', margin: '0 4px' }} /> (ở trên góc phải) → Chọn "Mở bằng Chrome"
+                  </li>
                 </ol>
               </div>
 
@@ -327,16 +327,18 @@ function VideoDownload() {
               <div style={{ marginTop: '8px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                 <strong style={{ fontSize: '14px', marginBottom: '6px', display: 'block', color: '#81c784' }}>🍎 iOS (Safari):</strong>
                 <ol style={{ marginTop: '6px', paddingLeft: '18px', marginBottom: '4px' }}>
-                  <li style={{ marginBottom: '4px' }}>Trong Zalo, giữ nút "Tải video" → Chọn "Mở trong Safari"</li>
-                  <li style={{ marginBottom: '4px' }}>Hoặc: Copy link từ Zalo → Mở Safari → Paste link</li>
-                  <li style={{ marginBottom: '4px' }}>Trong Safari: Video sẽ tải tự động về Files</li>
+                  <li style={{ marginBottom: '4px' }}>
+                    Trong Zalo, bấm vào dấu <img src="/icons8-more-25.png" alt="more" style={{ width: '20px', height: '20px', verticalAlign: 'middle', margin: '0 4px' }} /> (ở trên góc phải) → Chọn "Mở bằng Safari"
+                  </li>
+                  <li style={{ marginBottom: '4px' }}>
+                    Bấm tải video → Thông báo hiện ra → Bấm Tải về
+                  </li>
+                  <li style={{ marginBottom: '4px' }}>
+                    Bấm phần tải về <img src="/icons8-scroll-down-25.png" alt="downloads" style={{ width: '20px', height: '20px', verticalAlign: 'middle', margin: '0 4px' }} /> ở thanh tìm kiếm → Bấm tải về → Trong Bản tải về, bấm vào từng video để xem → Bấm vào dấu <img src="/icons8-share-rounded-48.png" alt="share" style={{ width: '20px', height: '20px', verticalAlign: 'middle', margin: '0 4px' }} /> (ở dưới góc phải) → Bấm Lưu video <img src="/icons8-download-48.png" alt="save" style={{ width: '20px', height: '20px', verticalAlign: 'middle', margin: '0 4px' }} />
+                  </li>
                 </ol>
               </div>
 
-              <ol style={{ marginTop: '8px', paddingLeft: '20px', marginBottom: '8px' }}>
-                <li style={{ marginBottom: '6px' }}>Trên máy tính: Kiểm tra thư mục Downloads</li>
-                <li style={{ marginBottom: '6px' }}>Nếu không tải được, giữ nút và chọn "Tải liên kết"</li>
-              </ol>
               <p style={{ marginTop: '8px', marginBottom: '4px' }}><strong>💡 Lưu ý:</strong> Mỗi video cần tải riêng lẻ. Vui lòng đợi video 1 tải xong trước khi tải video 2.</p>
             </div>
 
