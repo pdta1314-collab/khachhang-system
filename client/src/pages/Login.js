@@ -62,25 +62,8 @@ function Login() {
       </video>
 
       {/* Hình nền nằm trên video - khung ở giữa */}
-      <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '100%',
-        maxWidth: '400px',
-        height: 'auto',
-        aspectRatio: '16/9',
-        backgroundImage: 'url(/trumso.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        borderRadius: '20px',
-        zIndex: 1
-      }} />
-
-      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
-      <div style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
+      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+      <div style={{ width: '100%', maxWidth: '400px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: '20px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '24px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           Đăng nhập Admin
         </h1>

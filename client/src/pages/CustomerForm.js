@@ -83,25 +83,7 @@ function CustomerForm() {
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
 
-      {/* Hình nền nằm trên video - khung ở giữa */}
-      <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '100%',
-        maxWidth: '500px',
-        height: 'auto',
-        aspectRatio: '16/9',
-        backgroundImage: 'url(/trumso.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        borderRadius: '20px',
-        zIndex: 1
-      }} />
-
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px', position: 'relative', zIndex: 2 }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px', position: 'relative', zIndex: 1 }}>
       {/* Logo làm tiêu đề trang - nằm ngoài card */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img
@@ -117,7 +99,7 @@ function CustomerForm() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
+      <div style={{ width: '100%', maxWidth: '500px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: '20px' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
