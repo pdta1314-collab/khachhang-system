@@ -315,10 +315,16 @@ function VideoDownload() {
               
               {/* Android */}
               <div style={{ marginTop: '12px', marginBottom: '8px', padding: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-                <strong style={{ fontSize: '14px', marginBottom: '6px', display: 'block', color: '#4fc3f7' }}>🤖 Android (Chrome):</strong>
+                <strong style={{ fontSize: '14px', marginBottom: '6px', display: 'block', color: '#4fc3f7' }}>🤖 Android:</strong>
                 <ol style={{ marginTop: '6px', paddingLeft: '18px', marginBottom: '4px' }}>
                   <li style={{ marginBottom: '4px' }}>
-                    Trong Zalo, bấm vào dấu <img src="/icons8-more-25.png" alt="more" style={{ width: '20px', height: '20px', verticalAlign: 'middle', margin: '0 4px' }} /> (ở trên góc phải) → Chọn "Mở bằng Chrome"
+                    Trong Zalo, chọn quét mã QR <img src="/qr_code_scanner_24dp_CCCCCC_FILL0_wght400_GRAD0_opsz24.png" alt="qr scanner" style={{ width: '20px', height: '20px', verticalAlign: 'middle', margin: '0 4px' }} /> (ở trên góc phải)
+                  </li>
+                  <li style={{ marginBottom: '4px' }}>
+                    Chọn Ảnh có sẵn → Chọn Ảnh mã QR đã chụp → Bấm Mở link
+                  </li>
+                  <li style={{ marginBottom: '4px' }}>
+                    Bấm Tải video → Video sẽ tự động tải về thư mục ảnh
                   </li>
                 </ol>
               </div>
