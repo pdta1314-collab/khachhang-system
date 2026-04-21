@@ -6,16 +6,35 @@ const path = require('path');
 const fs = require('fs');
 const googleDriveService = require('../services/googleDriveService');
 
-// Trả về danh sách video URLs (hỗ trợ nhiều video)
+// Convert Google Drive URL sang direct download format
+const convertToDirectDownload = (url) => {
+  if (!url) return url;
+  
+  // Nếu đã là direct download format, giữ nguyên
+  if (url.includes('export=download')) return url;
+  
+  // Convert Google Drive URL sang direct download
+  const driveIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveIdMatch) {
+    const driveId = driveIdMatch[1];
+    return `https://drive.google.com/uc?export=download&id=${driveId}`;
+  }
+  
+  // Nếu không phải Google Drive, giữ nguyên
+  return url;
+};
+
+// Trả về danh sách video URLs (hỗ trợ nhiều video) - convert sang direct download
 const getVideoPaths = (videoPath) => {
   if (!videoPath) return [];
   try {
     const parsed = JSON.parse(videoPath);
-    if (Array.isArray(parsed)) return parsed;
-    return [parsed];
+    const urls = Array.isArray(parsed) ? parsed : [parsed];
+    // Convert tất cả URL sang direct download format
+    return urls.map(url => convertToDirectDownload(url));
   } catch (e) {
     // Nếu không phải JSON, trả về single item
-    if (videoPath.startsWith('http')) return [videoPath];
+    if (videoPath.startsWith('http')) return [convertToDirectDownload(videoPath)];
     const match = videoPath.match(/uploads[\\/](.+)$/);
     return match ? [`/uploads/${match[1]}`] : [`/uploads/${path.basename(videoPath)}`];
   }
