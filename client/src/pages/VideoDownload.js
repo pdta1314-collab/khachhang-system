@@ -138,25 +138,7 @@ function VideoDownload() {
         >
           <source src="/trumso.mp4" type="video/mp4" />
         </video>
-        {/* Hình nền nằm trên video - khung ở giữa */}
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%',
-          maxWidth: '500px',
-          height: 'auto',
-          aspectRatio: '16/9',
-          backgroundImage: 'url(/trumso.jpg)',
-          backgroundSize: 'contain',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundColor: '#000',
-          borderRadius: '20px',
-          zIndex: 1
-        }} />
-        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 2 }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
         <div style={{ padding: '40px' }}>
           <div className="loading">
             <div className="spinner"></div>
@@ -224,7 +206,7 @@ function VideoDownload() {
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
       <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px', position: 'relative', zIndex: 1 }}>
-      {/* Logo làm tiêu đề trang - nằm ngoài card */}
+      {/* Logo làm tiêu đề trang */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img
           src="/logo.png"
@@ -239,12 +221,12 @@ function VideoDownload() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#000', borderRadius: '20px' }}>
+      <div style={{ width: '100%', maxWidth: '500px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '32px', fontWeight: 'bold', textTransform: 'uppercase', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           TRANG TẢI VIDEO
         </h1>
 
-        <div style={{ marginBottom: '24px', padding: '20px' }}>
+        <div style={{ marginBottom: '24px' }}>
           <p style={{ marginBottom: '12px', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             <strong>Họ tên:</strong> {customer?.name}
           </p>
@@ -266,23 +248,10 @@ function VideoDownload() {
 
         {customer?.videoCount > 0 ? (
           <div>
-            {/* Hiển thị số lượng video */}
-            <div style={{
-              padding: '16px',
-              marginBottom: '16px',
-              fontSize: '14px',
-              color: '#fff',
-              textAlign: 'center',
-              textShadow: '0 1px 2px rgba(0,0,0,0.5)'
-            }}>
-              <strong>✅ Có {customer.videoCount} video đã sẵn sàng để tải</strong>
-            </div>
-
             {/* Danh sách các video */}
             {customer.videoUrls?.map((videoUrl, index) => (
               <div key={index} style={{
-                marginBottom: '16px',
-                padding: '16px'
+                marginBottom: '16px'
               }}>
                 <div style={{
                   marginBottom: '12px',
@@ -338,11 +307,9 @@ function VideoDownload() {
             {/* Hướng dẫn */}
             <div style={{ 
               marginTop: '12px', 
-              padding: '16px', 
-              backgroundColor: '#e3f2fd', 
-              borderRadius: '8px', 
               fontSize: '13px',
-              color: '#1565c0',
+              color: '#fff',
+              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
               lineHeight: '1.6'
             }}>
               <strong style={{ fontSize: '14px', marginBottom: '8px', display: 'block' }}>📱 Hướng dẫn tải video:</strong>

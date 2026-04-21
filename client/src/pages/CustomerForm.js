@@ -70,7 +70,6 @@ function CustomerForm() {
         loop
         muted
         playsInline
-        poster="/trumso.jpg"
         style={{
           position: 'fixed',
           top: 0,
@@ -87,7 +86,7 @@ function CustomerForm() {
       </video>
 
       <div className="container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px', position: 'relative', zIndex: 1 }}>
-      {/* Logo làm tiêu đề trang - nằm ngoài card */}
+      {/* Logo làm tiêu đề trang */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img
           src="/logo.png"
@@ -102,7 +101,7 @@ function CustomerForm() {
         />
       </div>
 
-      <div style={{ width: '100%', maxWidth: '500px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#000', borderRadius: '20px' }}>
+      <div style={{ width: '100%', maxWidth: '500px', padding: '32px' }}>
         {!success ? (
           <>
             <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', whiteSpace: 'nowrap', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>

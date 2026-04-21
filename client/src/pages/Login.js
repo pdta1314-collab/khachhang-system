@@ -61,9 +61,8 @@ function Login() {
         <source src="/trumso.mp4" type="video/mp4" />
       </video>
 
-      {/* Hình nền nằm trên video - khung ở giữa */}
       <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
-      <div style={{ width: '100%', maxWidth: '400px', padding: '32px', backgroundImage: 'url(/trumso.jpg)', backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#000', borderRadius: '20px' }}>
+      <div style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '24px', color: '#fff', fontSize: '24px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
           Đăng nhập Admin
         </h1>
