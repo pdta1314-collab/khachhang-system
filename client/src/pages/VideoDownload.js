@@ -60,11 +60,10 @@ function VideoDownload() {
     setDownloadedVideos(newDownloaded);
     localStorage.setItem(`downloaded_videos_${uniqueId}`, JSON.stringify([...newDownloaded]));
 
-    // Tạo link ẩn để tải video
+    // Tạo link ẩn để tải video - không target='_blank' để tải trực tiếp
     const link = document.createElement('a');
     link.href = videoUrl;
     link.download = `video_${customer?.name || 'customer'}_${index + 1}.mp4`;
-    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
